@@ -104,6 +104,7 @@ Future<List<Short_ad>> get_ads() async {
   }
 }
 
+
 Future<List<DropdownMenuItem>> getValutes() async {
   final allResponse = await http
       .get(Uri.parse('http://temike.pythonanywhere.com/apis/v1/valute_list'));

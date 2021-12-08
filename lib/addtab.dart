@@ -26,7 +26,7 @@ TextEditingController nameController = new TextEditingController();
 TextEditingController addressController = new TextEditingController();
 TextEditingController priceController = new TextEditingController();
 
-final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+final  _formKey = GlobalKey<FormState>();
 
 class AddTabWidget extends StatefulWidget {
   @override
@@ -37,6 +37,7 @@ class AddTabWidgetState extends State<AddTabWidget> {
   final snackBar = SnackBar(
       content: Text(
           'Отправлено на сервер. Будет доступно после одобрения Администратора.'));
+
   Widget buildGridView() {
     return GridView.count(
       crossAxisCount: 3,
@@ -49,16 +50,6 @@ class AddTabWidgetState extends State<AddTabWidget> {
         );
       }),
     );
-  }
-
-  void validateAndSave() async {
-    final FormState? form = _formKey.currentState;
-    if (form!.validate()) {
-      await postData();
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    } else {
-      print('Form is invalid');
-    }
   }
 
   @override
@@ -86,7 +77,10 @@ class AddTabWidgetState extends State<AddTabWidget> {
                     hintText: 'Заголовок*',
                   ),
                   validator: (value) {
-                    return (value != null) ? null : 'Заполните поле';
+                    if (value == null || value.isEmpty) {
+                      return 'Не может быть пустым..';
+                    }
+                    return null;
                   },
                 ),
                 TextField(
@@ -154,9 +148,12 @@ class AddTabWidgetState extends State<AddTabWidget> {
                       labelText: 'Цена*',
                       hintText: '0 = договорная',
                     ),
-                    validator: (value) {
-                      return (value != null) ? null : 'Заполните поле';
-                    }),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Не может быть пустым..';
+                    }
+                    return null;
+                  },),
                 SizedBox(
                   height: 20,
                 ),
@@ -185,9 +182,12 @@ class AddTabWidgetState extends State<AddTabWidget> {
                       icon: Icon(Icons.content_paste),
                       labelText: 'Имя*',
                     ),
-                    validator: (value) {
-                      return (value != null) ? null : 'Заполните поле';
-                    }),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Не может быть пустым..';
+                    }
+                    return null;
+                  },),
                 SizedBox(
                   height: 20,
                 ),
@@ -198,9 +198,12 @@ class AddTabWidgetState extends State<AddTabWidget> {
                       icon: Icon(Icons.content_paste),
                       labelText: 'Номер телефона*',
                     ),
-                    validator: (value) {
-                      return (value != null) ? null : 'Заполните поле';
-                    }),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Не может быть пустым..';
+                    }
+                    return null;
+                  },),
                 SizedBox(
                   height: 20,
                 ),
@@ -226,8 +229,55 @@ class AddTabWidgetState extends State<AddTabWidget> {
                         height: 50,
                       ),
                 ElevatedButton(
-                    onPressed: () {
-                      validateAndSave();
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()){
+                        await postData().then((value) {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return Dialog(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20.0)),
+                                  //this right here
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.all(Radius.circular(8))),
+                                    height: 300,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Ваше обьявление успешно отправлено на сервер. Обьявление будет доступным после того, как Администратор одобрит ваше обьявление.',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold, fontSize: 16),
+                                          ),
+                                          Text('Номер обьявления: '+value.toString()),
+                                          SizedBox(
+                                            width: 320.0,
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                  shadowColor: Color(0xFF1BC0C5)),
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: Text(
+                                                "Ок",
+                                                style: TextStyle(color: Colors.white),
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              });
+                        });
+                      }
                     },
                     child: Text('Отправить'))
               ],
@@ -298,5 +348,6 @@ Future postData() async {
       data: formData,
       options: Options(
           headers: {'Content-type': 'application/json; charset=UTF-8'}));
+  print(response.data);
   return response.data;
 }
