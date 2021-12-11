@@ -6,13 +6,13 @@ import 'addetail.dart';
 import 'includes/loads.dart';
 
 
-class SearchTab extends StatefulWidget {
+class CategoryTab extends StatefulWidget {
   int cat_id =0;
-  SearchTabState createState() => SearchTabState();
-  SearchTab(this.cat_id);
+  CategoryTabState createState() => CategoryTabState();
+  CategoryTab(this.cat_id);
 }
 
-class SearchTabState extends State<SearchTab> {
+class CategoryTabState extends State<CategoryTab> {
   int region = 999;
   late int category;
   int request_status =0;
@@ -92,7 +92,6 @@ class SearchTabState extends State<SearchTab> {
               future: list_ad,
               builder: (context,AsyncSnapshot snapshot) {
                 if (snapshot.hasData && snapshot.data.length != 0) {
-                  print('hasdata');
                   return ListView.separated(
                     separatorBuilder: (BuildContext context, int index) =>
                         Divider(),

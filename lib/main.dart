@@ -9,6 +9,7 @@ import 'story_view/store_page_view.dart';
 import 'includes/loads.dart';
 import 'category.dart';
 import 'includes/Ad.dart';
+import 'dart:developer';
 
 void main() {
   runApp(MyApp());
@@ -64,14 +65,15 @@ class MainScreen extends StatefulWidget {
 
 class MainScreenState extends State<MainScreen> {
   TextEditingController searchController = new TextEditingController();
-  String filterText = 'Все обьявления';
   int region = 999;
   List<DropdownMenuItem> categories_dropdown = [];
   int category = 999;
-
+  int requeststatus = 0;
+  late Future<List<Short_ad>> list_ad;
   @override
   void initState() {
     super.initState();
+    list_ad = get_ads();
   }
 
   @override
@@ -128,12 +130,19 @@ class MainScreenState extends State<MainScreen> {
                   ),
                   Expanded(
                       child: TextField(
-                    obscureText: true,
                     controller: searchController,
                     decoration: InputDecoration(
                         border: OutlineInputBorder(), labelText: 'Поиск...'),
                   )),
-                  IconButton(onPressed: () {}, icon: Icon(Icons.search_sharp))
+                  IconButton(onPressed: () {
+                    FocusScope.of(context).requestFocus(FocusNode());
+                    setState(() {
+                      requeststatus =1;
+                    });
+                    //debugger();
+                    list_ad = search_ad();
+
+                  }, icon: Icon(Icons.search_sharp))
                 ],
               ),
               Divider(
@@ -172,7 +181,7 @@ class MainScreenState extends State<MainScreen> {
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => SearchTab(snapshot.data[index].id)));
+                                          builder: (context) => CategoryTab(snapshot.data[index].id)));
                                 });
                           },
                           separatorBuilder: (BuildContext context, int index) {
@@ -194,7 +203,7 @@ class MainScreenState extends State<MainScreen> {
                 style: TextStyle(fontSize: 18),
               ),
               Container(
-                  height: 50,
+                  height: 110,
                   child: FutureBuilder(
                       future: get_stories(),
                       builder: (context, AsyncSnapshot snapshot) {
@@ -204,32 +213,46 @@ class MainScreenState extends State<MainScreen> {
                             itemCount: snapshot.data.length,
                             scrollDirection: Axis.horizontal,
                             itemBuilder: (context, index) {
-                              return GestureDetector(
-                                  child: CircleAvatar(
-                                    backgroundColor: Colors.red[300],
-                                    radius: 28.0,
-                                    child: snapshot.data[index].items[0].type ==
-                                            'jpg'
-                                        ? CircleAvatar(
-                                            backgroundImage: NetworkImage(
-                                                snapshot
-                                                    .data[index].items[0].src
-                                                    .toString()),
-                                            radius: 22.0,
-                                          )
-                                        : CircleAvatar(
-                                            backgroundColor: Colors.green,
-                                            radius: 22.0,
+                              return Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.blueAccent)
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: GestureDetector(
+                                      child: Column(
+                                        children: [
+                                          CircleAvatar(
+                                            backgroundColor: Colors.red[300],
+                                            radius: 28.0,
+                                            child: snapshot.data[index].items[0].type ==
+                                                    'jpg'
+                                                ? CircleAvatar(
+                                                    backgroundImage: NetworkImage(
+                                                        snapshot
+                                                            .data[index].items[0].src
+                                                            .toString()),
+                                                    radius: 26.0,
+                                                  )
+                                                : CircleAvatar(
+                                                    backgroundColor: Colors.green,
+                                                    radius: 22.0,
+                                                  ),
                                           ),
-                                  ),
-                                  onTap: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => StoryPageView(
-                                                story: snapshot
-                                                    .data[index].items)));
-                                  });
+                                          SizedBox(width: 90,child: Text(snapshot.data[index].title,style: TextStyle(fontSize: 8),maxLines: 4,),)
+
+                                        ],
+                                      ),
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) => StoryPageView(
+                                                    story: snapshot
+                                                        .data[index].items)));
+                                      }),
+                                ),
+                              );
                             },
                           );
                         } else
@@ -239,23 +262,14 @@ class MainScreenState extends State<MainScreen> {
                 height: 10,
                 color: Colors.black,
               ),
-              Text(filterText),
+              requeststatus ==1 ? CircularProgressIndicator() :
               FutureBuilder(
-                future: get_ads(),
+                future: list_ad,
                 builder: (context, AsyncSnapshot snapshot) {
-                  if (snapshot.data == null) {
-                    return Container(
-                      child: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  } else if (snapshot.hasData) {
+                  if (snapshot.hasData && snapshot.data.length != 0) {
                     return ListView.separated(
                       separatorBuilder: (BuildContext context, int index) =>
-                          Divider(
-                        height: 5,
-                        color: Colors.black,
-                      ),
+                          Divider(),
                       scrollDirection: Axis.vertical,
                       physics: NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
@@ -264,32 +278,19 @@ class MainScreenState extends State<MainScreen> {
                         return ListTile(
                           title: Text(snapshot.data[index].title),
                           leading: snapshot.data[index].images.length == 0
-                              ? Image.asset(
-                                  'assets/images/no_image.jpg',
-                                  width: 100,
-                                )
+                              ? Image.asset('assets/images/no_image.jpg')
                               : Image.network(
-                                  snapshot.data[index].images[0].toString(),
-                                  width: 100,
-                                ),
+                            snapshot.data[index].images[0].toString(),
+                            width: 100,
+                          ),
                           subtitle: snapshot.data[index].price.toString() == '0'
-                              ? Text('Договорная',
-                                  style: TextStyle(fontWeight: FontWeight.bold))
+                              ? Text('Договорная')
                               : Row(
-                                  children: [
-                                    Text(
-                                      snapshot.data[index].price.toString(),
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    SizedBox(
-                                      width: 10,
-                                    ),
-                                    Text(snapshot.data[index].valute.toString(),
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
+                            children: [
+                              Text(snapshot.data[index].price.toString()),
+                              Text(snapshot.data[index].valute.toString()),
+                            ],
+                          ),
                           onTap: () {
                             Navigator.push(
                                 context,
@@ -300,6 +301,18 @@ class MainScreenState extends State<MainScreen> {
                           },
                         );
                       },
+                    );
+                  } else if (snapshot.hasData) {
+                    return Column(
+                      children: [
+                        SizedBox(
+                          height: 20,
+                        ),
+                        Text(
+                          'Поиск не дал результатов',
+                          style: TextStyle(color: Colors.red, fontSize: 16),
+                        ),
+                      ],
                     );
                   } else if (snapshot.hasError) {
                     return Text("${snapshot.error}");
@@ -397,5 +410,37 @@ class MainScreenState extends State<MainScreen> {
             ),
           );
         });
+  }
+
+  Future<List<Short_ad>> search_ad() async {
+    String text = searchController.text;
+    final allResponse = await http.get(Uri.parse(
+        'https://temike.pythonanywhere.com/apis/v1/search/$text/$region/$category/'));
+    if (allResponse.statusCode == 200) {
+      var jsonData = jsonDecode(utf8.decode(allResponse.bodyBytes));
+      List<Short_ad> listAd = [];
+      for (Map<String, dynamic> i in jsonData) {
+        Short_ad shortAd = Short_ad(
+            i['pk'],
+            i['title'],
+            i['price'],
+            i['valute'].toString(),
+            []);
+        for (Map<String, dynamic> s in i['images_set']) {
+          shortAd.images.add(s['image']);
+        }
+        listAd.add(shortAd);
+      }
+      setState(() {
+        requeststatus =0;
+      });
+      return listAd;
+    } else {
+      print('Search Failed load');
+      setState(() {
+        requeststatus =0;
+      });
+      return [];
+    }
   }
 }
