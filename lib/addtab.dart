@@ -34,9 +34,7 @@ class AddTabWidget extends StatefulWidget {
 }
 
 class AddTabWidgetState extends State<AddTabWidget> {
-  final snackBar = SnackBar(
-      content: Text(
-          'Отправлено на сервер. Будет доступно после одобрения Администратора.'));
+  int _send_status = 0;
 
   Widget buildGridView() {
     return GridView.count(
@@ -54,6 +52,13 @@ class AddTabWidgetState extends State<AddTabWidget> {
 
   @override
   Widget build(BuildContext context) {
+    titleController.clear();
+    contentController.clear();
+    numberController.clear();
+    nameController.clear();
+    addressController.clear();
+    priceController.clear();
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -62,7 +67,7 @@ class AddTabWidgetState extends State<AddTabWidget> {
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(15),
-          child: Form(
+          child: Center( child: _send_status ==0 ? Form(
             key: _formKey,
             child: Column(
               children: [
@@ -231,19 +236,24 @@ class AddTabWidgetState extends State<AddTabWidget> {
                 ElevatedButton(
                     onPressed: () async {
                       if (_formKey.currentState!.validate()){
+                        setState(() {
+                          _send_status =1;
+                        });
                         await postData().then((value) {
+                          setState(() {
+                            _send_status = 0;
+                          });
                           showDialog(
                               context: context,
                               builder: (BuildContext context) {
                                 return Dialog(
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(20.0)),
-                                  //this right here
                                   child: Container(
                                     decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.all(Radius.circular(8))),
-                                    height: 300,
+                                    height: 270,
                                     child: Padding(
                                       padding: const EdgeInsets.all(12.0),
                                       child: Column(
@@ -253,16 +263,19 @@ class AddTabWidgetState extends State<AddTabWidget> {
                                           Text(
                                             'Ваше обьявление успешно отправлено на сервер. Обьявление будет доступным после того, как Администратор одобрит ваше обьявление.',
                                             style: TextStyle(
-                                                fontWeight: FontWeight.bold, fontSize: 16),
+                                                fontWeight: FontWeight.bold, fontSize: 11),
                                           ),
-                                          Text('Номер обьявления: '+value.toString()),
+                                          SizedBox(height: 20,),
+                                          Text('Номер обьявления: '+value.toString(),style: TextStyle(
+                                              fontWeight: FontWeight.bold, fontSize: 16)),
                                           SizedBox(
                                             width: 320.0,
                                             child: ElevatedButton(
                                               style: ElevatedButton.styleFrom(
                                                   shadowColor: Color(0xFF1BC0C5)),
                                               onPressed: () {
-                                                Navigator.of(context).pop();
+                                                int count = 0;
+                                                Navigator.of(context).popUntil((_) => count++ >= 2);
                                               },
                                               child: Text(
                                                 "Ок",
@@ -282,8 +295,8 @@ class AddTabWidgetState extends State<AddTabWidget> {
                     child: Text('Отправить'))
               ],
             ),
-          ),
-        ),
+          ) : CircularProgressIndicator(),
+        ),),
       ),
     );
   }

@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:nietkg/addtab.dart';
-import 'package:path/path.dart' as Path;
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:story_view/story_view.dart';
 import 'addetail.dart';
 import 'story_view/store_page_view.dart';
 import 'includes/loads.dart';
-import 'includes/category.dart';
+import 'category.dart';
 import 'includes/Ad.dart';
 
 void main() {
@@ -170,7 +169,10 @@ class MainScreenState extends State<MainScreen> {
                                   ),
                                 ),
                                 onTap: () {
-                                  print(category);
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => SearchTab(snapshot.data[index].id)));
                                 });
                           },
                           separatorBuilder: (BuildContext context, int index) {
