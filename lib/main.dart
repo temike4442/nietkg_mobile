@@ -66,14 +66,17 @@ class MainScreen extends StatefulWidget {
 class MainScreenState extends State<MainScreen> {
   TextEditingController searchController = new TextEditingController();
   int region = 999;
-  List<DropdownMenuItem> categories_dropdown = [];
   int category = 999;
   int requeststatus = 0;
   late Future<List<Short_ad>> list_ad;
+  late Future<List<DropdownMenuItem>> list_category;
+  late Future<List<DropdownMenuItem>> list_region;
   @override
   void initState() {
     super.initState();
     list_ad = get_ads();
+    list_category = getCategories();
+    list_region = getRegions();
   }
 
   @override
@@ -276,19 +279,36 @@ class MainScreenState extends State<MainScreen> {
                       itemCount: snapshot.data.length,
                       itemBuilder: (BuildContext context, int index) {
                         return ListTile(
-                          title: Text(snapshot.data[index].title),
+                          contentPadding: EdgeInsets.all(1.0),
+                          title: Text(snapshot.data[index].title,style: TextStyle(fontSize: 13,fontWeight: FontWeight.w600),),
                           leading: snapshot.data[index].images.length == 0
-                              ? Image.asset('assets/images/no_image.jpg')
+                              ? Image.asset('assets/images/no_image.jpg',width: 90)
                               : Image.network(
                             snapshot.data[index].images[0].toString(),
-                            width: 100,
+                            width: 90,
                           ),
                           subtitle: snapshot.data[index].price.toString() == '0'
-                              ? Text('Договорная')
-                              : Row(
+                              ?
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(snapshot.data[index].price.toString()),
-                              Text(snapshot.data[index].valute.toString()),
+                              Text(snapshot.data[index].region),
+                              Text('Договорная',style: TextStyle(fontWeight: FontWeight.w600,color: Colors.deepOrange),)
+                            ],
+                          )
+                              : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(snapshot.data[index].region),
+                              Row(
+                                children: [
+                                  Text(snapshot.data[index].price.toString(),
+                                    style: TextStyle(fontWeight: FontWeight.w600,color: Colors.deepOrange),),
+                                  SizedBox(width: 5,),
+                                  Text(snapshot.data[index].valute.toString(),
+                                    style:TextStyle(fontWeight: FontWeight.w600,color: Colors.deepOrange),),
+                                ],
+                              ),
                             ],
                           ),
                           onTap: () {
@@ -360,7 +380,7 @@ class MainScreenState extends State<MainScreen> {
                       height: 20,
                     ),
                     FutureBuilder(
-                      future: getRegions(),
+                      future: list_region,
                       builder: (context, AsyncSnapshot snapshot) {
                         return DropdownButtonFormField<dynamic>(
                           value: region,
@@ -377,7 +397,7 @@ class MainScreenState extends State<MainScreen> {
                       height: 20,
                     ),
                     FutureBuilder(
-                      future: getCategories(),
+                      future: list_category,
                       builder: (context, AsyncSnapshot snapshot) {
                         return DropdownButtonFormField<dynamic>(
                           value: category,
@@ -414,8 +434,14 @@ class MainScreenState extends State<MainScreen> {
 
   Future<List<Short_ad>> search_ad() async {
     String text = searchController.text;
-    final allResponse = await http.get(Uri.parse(
-        'https://temike.pythonanywhere.com/apis/v1/search/$text/$region/$category/'));
+    String url='';
+    if (text!=''){
+      url = 'https://temike.pythonanywhere.com/apis/v1/search/$text/$region/$category/';
+    }
+    else{
+      url = 'https://temike.pythonanywhere.com/apis/v1/category/$category/$region/';
+    }
+    final allResponse = await http.get(Uri.parse(url));
     if (allResponse.statusCode == 200) {
       var jsonData = jsonDecode(utf8.decode(allResponse.bodyBytes));
       List<Short_ad> listAd = [];
@@ -425,7 +451,7 @@ class MainScreenState extends State<MainScreen> {
             i['title'],
             i['price'],
             i['valute'].toString(),
-            []);
+            [],i['region'].toString());
         for (Map<String, dynamic> s in i['images_set']) {
           shortAd.images.add(s['image']);
         }

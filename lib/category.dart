@@ -103,7 +103,7 @@ class CategoryTabState extends State<CategoryTab> {
                       return ListTile(
                         title: Text(snapshot.data[index].title),
                         leading: snapshot.data[index].images.length == 0
-                            ? Image.asset('assets/images/no_image.jpg')
+                            ? Image.asset('assets/images/no_image.jpg',width: 100)
                             : Image.network(
                           snapshot.data[index].images[0].toString(),
                           width: 100,
@@ -162,7 +162,8 @@ class CategoryTabState extends State<CategoryTab> {
             i['title'],
             i['price'],
             i['valute'].toString(),
-            []);
+            [],
+            i['region'].toString());
         for (Map<String, dynamic> s in i['images_set']) {
           shortAd.images.add(s['image']);
         }

@@ -91,7 +91,7 @@ Future<List<Short_ad>> get_ads() async {
     List<Short_ad> listAd = [];
     for (Map<String, dynamic> i in jsonData) {
       Short_ad shortAd =
-          Short_ad(i['pk'], i['title'], i['price'], i['valute'].toString(), []);
+          Short_ad(i['pk'], i['title'], i['price'], i['valute'].toString(), [],i['region'].toString());
       for (Map<String, dynamic> s in i['images_set']) {
         shortAd.images.add(s['image']);
       }

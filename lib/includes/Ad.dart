@@ -19,12 +19,14 @@ class Short_ad {
   int price;
   List<String> images;
   String valute;
+  String region;
   Short_ad(
     this.pk,
     this.title,
     this.price,
     this.valute,
     this.images,
+      this.region
   );
 }
 
