@@ -17,12 +17,16 @@ class CategoryTabState extends State<CategoryTab> {
   late int category;
   int request_status =0;
   late Future<List<Short_ad>> list_ad;
+  late Future<List<DropdownMenuItem>> list_category;
+  late Future<List<DropdownMenuItem>> list_region;
 
   @override
   void initState() {
     super.initState();
     list_ad = _load_ad(widget.cat_id);
     category = widget.cat_id;
+    list_category = getCategories();
+    list_region = getRegions();
   }
 
   @override
@@ -36,7 +40,6 @@ class CategoryTabState extends State<CategoryTab> {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Center( child:
-          request_status == 0 ? CircularProgressIndicator():
         Column(
           children: [
             Text('Фильтр и поиск обьявлений'),
@@ -44,7 +47,7 @@ class CategoryTabState extends State<CategoryTab> {
               height: 10,
             ),
             FutureBuilder(
-              future: getRegions(),
+              future: list_region,
               builder: (context, AsyncSnapshot snapshot) {
                 return DropdownButtonFormField<dynamic>(
                   value: region,
@@ -58,7 +61,7 @@ class CategoryTabState extends State<CategoryTab> {
               },
             ),
             FutureBuilder(
-              future: getCategories(),
+              future: list_category,
               builder: (context,AsyncSnapshot snapshot) {
                 return DropdownButtonFormField<dynamic>(
                   value: category,
@@ -88,7 +91,7 @@ class CategoryTabState extends State<CategoryTab> {
             SizedBox(
               height: 10,
             ),
-            FutureBuilder(
+            request_status == 0 ? CircularProgressIndicator():FutureBuilder(
               future: list_ad,
               builder: (context,AsyncSnapshot snapshot) {
                 if (snapshot.hasData && snapshot.data.length != 0) {
@@ -101,19 +104,36 @@ class CategoryTabState extends State<CategoryTab> {
                     itemCount: snapshot.data.length,
                     itemBuilder: (BuildContext context, int index) {
                       return ListTile(
-                        title: Text(snapshot.data[index].title),
+                        contentPadding: EdgeInsets.all(1.0),
+                        title: Text(snapshot.data[index].title,style: TextStyle(fontSize: 13,fontWeight: FontWeight.w600),),
                         leading: snapshot.data[index].images.length == 0
-                            ? Image.asset('assets/images/no_image.jpg',width: 100)
+                            ? Image.asset('assets/images/no_image.jpg',width: 90)
                             : Image.network(
                           snapshot.data[index].images[0].toString(),
-                          width: 100,
+                          width: 90,
                         ),
                         subtitle: snapshot.data[index].price.toString() == '0'
-                            ? Text('Договорная')
-                            : Row(
+                            ?
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(snapshot.data[index].price.toString()),
-                            Text(snapshot.data[index].valute.toString()),
+                            Text(snapshot.data[index].region),
+                            Text('Договорная',style: TextStyle(fontWeight: FontWeight.w600,color: Colors.deepOrange),)
+                          ],
+                        )
+                            : Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(snapshot.data[index].region),
+                            Row(
+                              children: [
+                                Text(snapshot.data[index].price.toString(),
+                                  style: TextStyle(fontWeight: FontWeight.w600,color: Colors.deepOrange),),
+                                SizedBox(width: 5,),
+                                Text(snapshot.data[index].valute.toString(),
+                                  style:TextStyle(fontWeight: FontWeight.w600,color: Colors.deepOrange),),
+                              ],
+                            ),
                           ],
                         ),
                         onTap: () {

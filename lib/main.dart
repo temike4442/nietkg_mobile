@@ -372,7 +372,7 @@ class MainScreenState extends State<MainScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Фильтр обьявлений',
+                      'Параметры поиска',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                     ),

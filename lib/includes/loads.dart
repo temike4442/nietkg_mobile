@@ -67,7 +67,7 @@ Future<List<DropdownMenuItem>> getCategories() async {
 
 Future<List<Category>> getCategories_menu() async {
   List<Category> listcategory = [
-    Category(0, 'Все', 'http://temike.pythonanywhere.com/media/icons/all.png')
+    Category(999, 'Все', 'http://temike.pythonanywhere.com/media/icons/all.png')
   ];
   final allResponse = await http
       .get(Uri.parse('http://temike.pythonanywhere.com/apis/v1/category_list'));

@@ -121,7 +121,7 @@ class AdDetailState extends State<AdDetail> {
                     Divider(),
                     Wrap(
                       children: [
-                        Text('Адрес: '),
+                        Text('Адрес: ',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),),
                         snapshot.data.address == null
                             ? Text('нет')
                             : Text(snapshot.data.address),
