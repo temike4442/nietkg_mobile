@@ -3,13 +3,11 @@ import 'dart:convert';
 import 'package:nietkg/addtab.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:story_view/story_view.dart';
 import 'addetail.dart';
 import 'story_view/store_page_view.dart';
 import 'includes/loads.dart';
 import 'category.dart';
 import 'includes/Ad.dart';
-import 'dart:developer';
 
 void main() {
   runApp(MyApp());
@@ -68,13 +66,19 @@ class MainScreenState extends State<MainScreen> {
   int region = 999;
   int category = 999;
   int requeststatus = 0;
+  int _count_ad =0;
+  int _index_page =1;
+  String _prev_url = '';
+  String _next_url = '';
   late Future<List<Short_ad>> list_ad;
   late Future<List<DropdownMenuItem>> list_category;
   late Future<List<DropdownMenuItem>> list_region;
+
+
   @override
   void initState() {
     super.initState();
-    list_ad = get_ads();
+    list_ad = get_ads('http://temike.pythonanywhere.com/apis/v1/');
     list_category = getCategories();
     list_region = getRegions();
   }
@@ -142,7 +146,6 @@ class MainScreenState extends State<MainScreen> {
                     setState(() {
                       requeststatus =1;
                     });
-                    //debugger();
                     list_ad = search_ad();
 
                   }, icon: Icon(Icons.search_sharp))
@@ -265,7 +268,7 @@ class MainScreenState extends State<MainScreen> {
                 height: 10,
                 color: Colors.black,
               ),
-              requeststatus ==1 ? CircularProgressIndicator() :
+              requeststatus == 1 ? CircularProgressIndicator() :
               FutureBuilder(
                 future: list_ad,
                 builder: (context, AsyncSnapshot snapshot) {
@@ -340,6 +343,18 @@ class MainScreenState extends State<MainScreen> {
                   return CircularProgressIndicator();
                 },
               ),
+              SizedBox(height: 20,),
+              Text('Страница $_index_page из $_count_ad'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  if (_prev_url==null || _prev_url == '')  TextButton.icon(onPressed: null, icon: Icon(Icons.navigate_before), label: Text('Пред.'))
+                  else TextButton.icon(onPressed: (){}, icon: Icon(Icons.navigate_before), label: Text('Пред.')),
+                  if (_next_url==null || _next_url == '')  TextButton.icon(onPressed: null, icon: Icon(Icons.navigate_next), label: Text('След.'))
+                  else TextButton.icon(onPressed: (){}, icon: Icon(Icons.navigate_next), label: Text('След.')),
+                ],
+              ),
+              SizedBox(height: 70,)
             ],
           ),
         ),
@@ -432,6 +447,32 @@ class MainScreenState extends State<MainScreen> {
         });
   }
 
+  Future<List<Short_ad>> get_ads(String _url) async {
+    final allResponse =
+    await http.get(Uri.parse(_url));
+    if (allResponse.statusCode == 200) {
+      var jsonData = jsonDecode(utf8.decode(allResponse.bodyBytes));
+      var result = jsonData['results'];
+      List<Short_ad> listAd = [];
+      for (Map<String, dynamic> i in result) {
+        Short_ad shortAd =
+        Short_ad(i['pk'], i['title'], i['price'], i['valute'].toString(), [],i['region'].toString());
+        for (Map<String, dynamic> s in i['images_set']) {
+          shortAd.images.add(s['image']);
+        }
+        listAd.add(shortAd);
+      }
+      setState(() {
+        _count_ad = jsonData['count'];
+        _next_url = jsonData['next'];
+        _prev_url = jsonData['previous'];
+      });
+      return listAd;
+    } else {
+      print('Error Failed load');
+      return [];
+    }
+  }
   Future<List<Short_ad>> search_ad() async {
     String text = searchController.text;
     String url='';
@@ -444,8 +485,9 @@ class MainScreenState extends State<MainScreen> {
     final allResponse = await http.get(Uri.parse(url));
     if (allResponse.statusCode == 200) {
       var jsonData = jsonDecode(utf8.decode(allResponse.bodyBytes));
+      var result = jsonData['results'];
       List<Short_ad> listAd = [];
-      for (Map<String, dynamic> i in jsonData) {
+      for (Map<String, dynamic> i in result) {
         Short_ad shortAd = Short_ad(
             i['pk'],
             i['title'],
