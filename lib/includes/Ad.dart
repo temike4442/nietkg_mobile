@@ -20,13 +20,15 @@ class Short_ad {
   List<String> images;
   String valute;
   String region;
+  String date;
   Short_ad(
     this.pk,
     this.title,
     this.price,
     this.valute,
     this.images,
-      this.region
+    this.region,
+    this.date
   );
 }
 

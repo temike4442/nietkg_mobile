@@ -24,9 +24,9 @@ Future<List<DropdownMenuItem>> getRegions() async {
   }
 }
 
-Future<List<Story>> get_stories() async {
+Future<List<Story>> get_stories(String url) async {
   final allResponse = await http
-      .get(Uri.parse('http://temike.pythonanywhere.com/apis/v1/story_list'));
+      .get(Uri.parse(url));
   if (allResponse.statusCode == 200) {
     var jsonData = jsonDecode(utf8.decode(allResponse.bodyBytes));
     List<Story> liststory = [];

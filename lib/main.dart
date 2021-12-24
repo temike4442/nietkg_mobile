@@ -66,14 +66,13 @@ class MainScreenState extends State<MainScreen> {
   int region = 999;
   int category = 999;
   int requeststatus = 0;
-  int _count_ad =0;
-  int _index_page =1;
+  int _count_ad = 0;
+  int _index_page = 1;
   String _prev_url = '';
   String _next_url = '';
   late Future<List<Short_ad>> list_ad;
   late Future<List<DropdownMenuItem>> list_category;
   late Future<List<DropdownMenuItem>> list_region;
-
 
   @override
   void initState() {
@@ -141,14 +140,16 @@ class MainScreenState extends State<MainScreen> {
                     decoration: InputDecoration(
                         border: OutlineInputBorder(), labelText: 'Поиск...'),
                   )),
-                  IconButton(onPressed: () {
-                    FocusScope.of(context).requestFocus(FocusNode());
-                    setState(() {
-                      requeststatus =1;
-                    });
-                    list_ad = search_ad();
-
-                  }, icon: Icon(Icons.search_sharp))
+                  IconButton(
+                      onPressed: () {
+                        FocusScope.of(context).requestFocus(FocusNode());
+                        setState(() {
+                          requeststatus = 1;
+                          _index_page = 1;
+                        });
+                        list_ad = search_ad();
+                      },
+                      icon: Icon(Icons.search_sharp))
                 ],
               ),
               Divider(
@@ -187,7 +188,8 @@ class MainScreenState extends State<MainScreen> {
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => CategoryTab(snapshot.data[index].id)));
+                                          builder: (context) => CategoryTab(
+                                              snapshot.data[index].id)));
                                 });
                           },
                           separatorBuilder: (BuildContext context, int index) {
@@ -204,14 +206,10 @@ class MainScreenState extends State<MainScreen> {
                 height: 10,
                 color: Colors.black,
               ),
-              Text(
-                'VIP',
-                style: TextStyle(fontSize: 18),
-              ),
               Container(
                   height: 110,
                   child: FutureBuilder(
-                      future: get_stories(),
+                      future: get_stories('http://temike.pythonanywhere.com/apis/v1/story_list'),
                       builder: (context, AsyncSnapshot snapshot) {
                         if (snapshot.hasData) {
                           return ListView.builder(
@@ -221,8 +219,8 @@ class MainScreenState extends State<MainScreen> {
                             itemBuilder: (context, index) {
                               return Container(
                                 decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.blueAccent)
-                                ),
+                                    border:
+                                        Border.all(color: Colors.blueAccent)),
                                 child: Padding(
                                   padding: const EdgeInsets.all(4.0),
                                   child: GestureDetector(
@@ -231,31 +229,43 @@ class MainScreenState extends State<MainScreen> {
                                           CircleAvatar(
                                             backgroundColor: Colors.red[300],
                                             radius: 28.0,
-                                            child: snapshot.data[index].items[0].type ==
+                                            child: snapshot.data[index].items[0]
+                                                        .type ==
                                                     'jpg'
                                                 ? CircleAvatar(
-                                                    backgroundImage: NetworkImage(
-                                                        snapshot
-                                                            .data[index].items[0].src
+                                                    backgroundImage:
+                                                        NetworkImage(snapshot
+                                                            .data[index]
+                                                            .items[0]
+                                                            .src
                                                             .toString()),
                                                     radius: 26.0,
                                                   )
                                                 : CircleAvatar(
-                                                    backgroundColor: Colors.green,
+                                                    backgroundColor:
+                                                        Colors.green,
                                                     radius: 22.0,
                                                   ),
                                           ),
-                                          SizedBox(width: 90,child: Text(snapshot.data[index].title,style: TextStyle(fontSize: 8),maxLines: 4,),)
-
+                                          SizedBox(
+                                            width: 90,
+                                            child: Text(
+                                              snapshot.data[index].title,
+                                              style: TextStyle(fontSize: 8),
+                                              maxLines: 4,
+                                            ),
+                                          )
                                         ],
                                       ),
                                       onTap: () {
                                         Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                                builder: (context) => StoryPageView(
-                                                    story: snapshot
-                                                        .data[index].items)));
+                                                builder: (context) =>
+                                                    StoryPageView(
+                                                        story: snapshot
+                                                            .data[index]
+                                                            .items)));
                                       }),
                                 ),
                               );
@@ -268,93 +278,200 @@ class MainScreenState extends State<MainScreen> {
                 height: 10,
                 color: Colors.black,
               ),
-              requeststatus == 1 ? CircularProgressIndicator() :
-              FutureBuilder(
-                future: list_ad,
-                builder: (context, AsyncSnapshot snapshot) {
-                  if (snapshot.hasData && snapshot.data.length != 0) {
-                    return ListView.separated(
-                      separatorBuilder: (BuildContext context, int index) =>
-                          Divider(),
-                      scrollDirection: Axis.vertical,
-                      physics: NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: snapshot.data.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return ListTile(
-                          contentPadding: EdgeInsets.all(1.0),
-                          title: Text(snapshot.data[index].title,style: TextStyle(fontSize: 13,fontWeight: FontWeight.w600),),
-                          leading: snapshot.data[index].images.length == 0
-                              ? Image.asset('assets/images/no_image.jpg',width: 90)
-                              : Image.network(
-                            snapshot.data[index].images[0].toString(),
-                            width: 90,
-                          ),
-                          subtitle: snapshot.data[index].price.toString() == '0'
-                              ?
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              requeststatus == 1
+                  ? CircularProgressIndicator()
+                  : FutureBuilder(
+                      future: list_ad,
+                      builder: (context, AsyncSnapshot snapshot) {
+                        if (snapshot.hasData && snapshot.data.length != 0) {
+                          return ListView.separated(
+                            separatorBuilder:
+                                (BuildContext context, int index) => Divider(),
+                            scrollDirection: Axis.vertical,
+                            physics: NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: snapshot.data.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              return ListTile(
+                                contentPadding: EdgeInsets.all(1.0),
+                                title: Text(
+                                  snapshot.data[index].title,
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                leading: snapshot.data[index].images.length == 0
+                                    ? Image.asset('assets/images/no_image.jpg',
+                                        width: 90)
+                                    : Image.network(
+                                        snapshot.data[index].images[0]
+                                            .toString(),
+                                        width: 90,
+                                      ),
+                                subtitle: snapshot.data[index].price
+                                            .toString() ==
+                                        '0'
+                                    ? Column(
+                                        children: [
+                                          SizedBox(height: 10,),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(snapshot.data[index].region),
+                                              Text(
+                                                'Договорная',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.deepOrange),
+                                              )
+                                            ],
+                                          ),
+                                          SizedBox(height: 10,),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(snapshot.data[index].date),
+                                            ],
+                                          )
+                                        ],
+                                      )
+                                    : Column(
+                                        children: [
+                                          SizedBox(height: 10,),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(snapshot.data[index].region),
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    snapshot.data[index].price
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color:
+                                                            Colors.deepOrange),
+                                                  ),
+                                                  SizedBox(
+                                                    width: 5,
+                                                  ),
+                                                  Text(
+                                                    snapshot.data[index].valute
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color:
+                                                            Colors.deepOrange),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(height: 10,),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(snapshot.data[index].date),
+                                            ],
+                                          )
+                                        ],
+                                      ),
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => AdDetail(
+                                              pk: snapshot.data[index].pk,
+                                              title:
+                                                  snapshot.data[index].title)));
+                                },
+                              );
+                            },
+                          );
+                        } else if (snapshot.hasData) {
+                          return Column(
                             children: [
-                              Text(snapshot.data[index].region),
-                              Text('Договорная',style: TextStyle(fontWeight: FontWeight.w600,color: Colors.deepOrange),)
-                            ],
-                          )
-                              : Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(snapshot.data[index].region),
-                              Row(
-                                children: [
-                                  Text(snapshot.data[index].price.toString(),
-                                    style: TextStyle(fontWeight: FontWeight.w600,color: Colors.deepOrange),),
-                                  SizedBox(width: 5,),
-                                  Text(snapshot.data[index].valute.toString(),
-                                    style:TextStyle(fontWeight: FontWeight.w600,color: Colors.deepOrange),),
-                                ],
+                              SizedBox(
+                                height: 20,
+                              ),
+                              Text(
+                                'Поиск не дал результатов',
+                                style:
+                                    TextStyle(color: Colors.red, fontSize: 16),
                               ),
                             ],
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => AdDetail(
-                                        pk: snapshot.data[index].pk,
-                                        title: snapshot.data[index].title)));
-                          },
-                        );
+                          );
+                        } else if (snapshot.hasError) {
+                          return Text("${snapshot.error}");
+                        }
+                        return CircularProgressIndicator();
                       },
-                    );
-                  } else if (snapshot.hasData) {
-                    return Column(
-                      children: [
-                        SizedBox(
-                          height: 20,
-                        ),
-                        Text(
-                          'Поиск не дал результатов',
-                          style: TextStyle(color: Colors.red, fontSize: 16),
-                        ),
-                      ],
-                    );
-                  } else if (snapshot.hasError) {
-                    return Text("${snapshot.error}");
-                  }
-                  return CircularProgressIndicator();
-                },
+                    ),
+              SizedBox(
+                height: 20,
               ),
-              SizedBox(height: 20,),
               Text('Страница $_index_page из $_count_ad'),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  if (_prev_url==null || _prev_url == '')  TextButton.icon(onPressed: null, icon: Icon(Icons.navigate_before), label: Text('Пред.'))
-                  else TextButton.icon(onPressed: (){}, icon: Icon(Icons.navigate_before), label: Text('Пред.')),
-                  if (_next_url==null || _next_url == '')  TextButton.icon(onPressed: null, icon: Icon(Icons.navigate_next), label: Text('След.'))
-                  else TextButton.icon(onPressed: (){}, icon: Icon(Icons.navigate_next), label: Text('След.')),
+                  if (_prev_url == null || _prev_url == '')
+                    TextButton.icon(
+                        onPressed: null,
+                        icon: Icon(Icons.navigate_before),
+                        label: Text('Пред.'))
+                  else
+                    TextButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          requeststatus = 1;
+                          _index_page--;
+                        });
+                        list_ad = get_ads(_prev_url);
+                      },
+                      icon: Icon(
+                        Icons.navigate_before,
+                        color: Colors.white,
+                      ),
+                      label:
+                          Text('Пред.', style: TextStyle(color: Colors.white)),
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.lightBlue,
+                      ),
+                    ),
+                  if (_next_url == null || _next_url == '')
+                    TextButton.icon(
+                        onPressed: null,
+                        icon: Icon(Icons.navigate_next),
+                        label: Text('След.'))
+                  else
+                    TextButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            requeststatus = 1;
+                            _index_page++;
+                          });
+                          list_ad = get_ads(_next_url);
+                        },
+                        icon: Icon(
+                          Icons.navigate_next,
+                          color: Colors.white,
+                        ),
+                        label: Text(
+                          'След.',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.lightBlue,
+                        )),
                 ],
               ),
-              SizedBox(height: 70,)
+              SizedBox(
+                height: 70,
+              )
             ],
           ),
         ),
@@ -448,39 +565,46 @@ class MainScreenState extends State<MainScreen> {
   }
 
   Future<List<Short_ad>> get_ads(String _url) async {
-    final allResponse =
-    await http.get(Uri.parse(_url));
+    final allResponse = await http.get(Uri.parse(_url));
     if (allResponse.statusCode == 200) {
       var jsonData = jsonDecode(utf8.decode(allResponse.bodyBytes));
       var result = jsonData['results'];
       List<Short_ad> listAd = [];
       for (Map<String, dynamic> i in result) {
-        Short_ad shortAd =
-        Short_ad(i['pk'], i['title'], i['price'], i['valute'].toString(), [],i['region'].toString());
+        Short_ad shortAd = Short_ad(i['pk'], i['title'], i['price'],
+            i['valute'].toString(), [], i['region'].toString(), i['date']);
         for (Map<String, dynamic> s in i['images_set']) {
           shortAd.images.add(s['image']);
         }
         listAd.add(shortAd);
       }
+      var _count_page = (jsonData['count']) ~/ 4;
+      if (jsonData['count'] % 4 != 0) _count_page++;
       setState(() {
-        _count_ad = jsonData['count'];
+        _count_ad = _count_page;
         _next_url = jsonData['next'];
         _prev_url = jsonData['previous'];
+        requeststatus = 0;
       });
       return listAd;
     } else {
       print('Error Failed load');
+      setState(() {
+        requeststatus = 0;
+      });
       return [];
     }
   }
+
   Future<List<Short_ad>> search_ad() async {
     String text = searchController.text;
-    String url='';
-    if (text!=''){
-      url = 'https://temike.pythonanywhere.com/apis/v1/search/$text/$region/$category/';
-    }
-    else{
-      url = 'https://temike.pythonanywhere.com/apis/v1/category/$category/$region/';
+    String url = '';
+    if (text != '') {
+      url =
+          'https://temike.pythonanywhere.com/apis/v1/search/$text/$region/$category/';
+    } else {
+      url =
+          'https://temike.pythonanywhere.com/apis/v1/category/$category/$region/';
     }
     final allResponse = await http.get(Uri.parse(url));
     if (allResponse.statusCode == 200) {
@@ -488,25 +612,26 @@ class MainScreenState extends State<MainScreen> {
       var result = jsonData['results'];
       List<Short_ad> listAd = [];
       for (Map<String, dynamic> i in result) {
-        Short_ad shortAd = Short_ad(
-            i['pk'],
-            i['title'],
-            i['price'],
-            i['valute'].toString(),
-            [],i['region'].toString());
+        Short_ad shortAd = Short_ad(i['pk'], i['title'], i['price'],
+            i['valute'].toString(), [], i['region'].toString(), i['date']);
         for (Map<String, dynamic> s in i['images_set']) {
           shortAd.images.add(s['image']);
         }
         listAd.add(shortAd);
       }
+      var _count_page = (jsonData['count']) ~/ 4;
+      if (jsonData['count'] % 4 != 0) _count_page++;
       setState(() {
-        requeststatus =0;
+        _count_ad = _count_page;
+        _next_url = jsonData['next'];
+        _prev_url = jsonData['previous'];
+        requeststatus = 0;
       });
       return listAd;
     } else {
       print('Search Failed load');
       setState(() {
-        requeststatus =0;
+        requeststatus = 0;
       });
       return [];
     }

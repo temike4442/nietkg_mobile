@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'includes/Ad.dart';
 import 'addetail.dart';
 import 'includes/loads.dart';
+import 'story_view/store_page_view.dart';
 
 
 class CategoryTab extends StatefulWidget {
@@ -16,15 +17,20 @@ class CategoryTabState extends State<CategoryTab> {
   int region = 999;
   late int category;
   int request_status =0;
+  int _count_ad =0;
+  int _index_page =1;
+  String _prev_url = '';
+  String _next_url = '';
   late Future<List<Short_ad>> list_ad;
+  late Future<List<Story>> story_list;
   late Future<List<DropdownMenuItem>> list_category;
   late Future<List<DropdownMenuItem>> list_region;
 
   @override
   void initState() {
     super.initState();
-    list_ad = _load_ad(widget.cat_id);
     category = widget.cat_id;
+    list_ad = _load_ad('https://temike.pythonanywhere.com/apis/v1/category/$category/$region/');
     list_category = getCategories();
     list_region = getRegions();
   }
@@ -77,19 +83,91 @@ class CategoryTabState extends State<CategoryTab> {
             ElevatedButton(
                 onPressed: () {
                   FocusScope.of(context).requestFocus(FocusNode());
+                  story_list = get_stories('https://temike.pythonanywhere.com/apis/v1/story_list/$category');
                   setState(() {
                     request_status = 0;
-                    list_ad = _load_ad(category);
                   });
+                  list_ad = _load_ad('https://temike.pythonanywhere.com/apis/v1/category/$category/$region/');
                 },
                 child: Text('Найти')),
             SizedBox(
               height: 20,
             ),
-            //ad_list != null ? Text('Результаты поиска') : Text(''),
             Divider(),
             SizedBox(
               height: 10,
+            ),
+            Container(
+                height: 110,
+                child: request_status == 0 ? CircularProgressIndicator(): FutureBuilder(
+                    future: story_list,
+                    builder: (context, AsyncSnapshot snapshot) {
+                      if (snapshot.hasData) {
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: snapshot.data.length,
+                          scrollDirection: Axis.horizontal,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                  border:
+                                  Border.all(color: Colors.blueAccent)),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: GestureDetector(
+                                    child: Column(
+                                      children: [
+                                        CircleAvatar(
+                                          backgroundColor: Colors.red[300],
+                                          radius: 28.0,
+                                          child: snapshot.data[index].items[0]
+                                              .type ==
+                                              'jpg'
+                                              ? CircleAvatar(
+                                            backgroundImage:
+                                            NetworkImage(snapshot
+                                                .data[index]
+                                                .items[0]
+                                                .src
+                                                .toString()),
+                                            radius: 26.0,
+                                          )
+                                              : CircleAvatar(
+                                            backgroundColor:
+                                            Colors.green,
+                                            radius: 22.0,
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 90,
+                                          child: Text(
+                                            snapshot.data[index].title,
+                                            style: TextStyle(fontSize: 8),
+                                            maxLines: 4,
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                    onTap: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  StoryPageView(
+                                                      story: snapshot
+                                                          .data[index]
+                                                          .items)));
+                                    }),
+                              ),
+                            );
+                          },
+                        );
+                      } else
+                        return CircularProgressIndicator();
+                    })),
+            Divider(
+              height: 10,
+              color: Colors.black,
             ),
             request_status == 0 ? CircularProgressIndicator():FutureBuilder(
               future: list_ad,
@@ -112,28 +190,76 @@ class CategoryTabState extends State<CategoryTab> {
                           snapshot.data[index].images[0].toString(),
                           width: 90,
                         ),
-                        subtitle: snapshot.data[index].price.toString() == '0'
-                            ?
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        subtitle: snapshot.data[index].price
+                            .toString() ==
+                            '0'
+                            ? Column(
                           children: [
-                            Text(snapshot.data[index].region),
-                            Text('Договорная',style: TextStyle(fontWeight: FontWeight.w600,color: Colors.deepOrange),)
-                          ],
-                        )
-                            : Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(snapshot.data[index].region),
+                            SizedBox(height: 10,),
                             Row(
+                              mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(snapshot.data[index].price.toString(),
-                                  style: TextStyle(fontWeight: FontWeight.w600,color: Colors.deepOrange),),
-                                SizedBox(width: 5,),
-                                Text(snapshot.data[index].valute.toString(),
-                                  style:TextStyle(fontWeight: FontWeight.w600,color: Colors.deepOrange),),
+                                Text(snapshot.data[index].region),
+                                Text(
+                                  'Договорная',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.deepOrange),
+                                )
                               ],
                             ),
+                            SizedBox(height: 10,),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(snapshot.data[index].date),
+                              ],
+                            )
+                          ],
+                        )
+                            : Column(
+                          children: [
+                            SizedBox(height: 10,),
+                            Row(
+                              mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(snapshot.data[index].region),
+                                Row(
+                                  children: [
+                                    Text(
+                                      snapshot.data[index].price
+                                          .toString(),
+                                      style: TextStyle(
+                                          fontWeight:
+                                          FontWeight.w600,
+                                          color:
+                                          Colors.deepOrange),
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      snapshot.data[index].valute
+                                          .toString(),
+                                      style: TextStyle(
+                                          fontWeight:
+                                          FontWeight.w600,
+                                          color:
+                                          Colors.deepOrange),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10,),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(snapshot.data[index].date),
+                              ],
+                            )
                           ],
                         ),
                         onTap: () {
@@ -170,11 +296,11 @@ class CategoryTabState extends State<CategoryTab> {
     ));
   }
 
-  Future<List<Short_ad>> _load_ad(int cat_id) async {
-    final allResponse = await http.get(Uri.parse(
-        'https://temike.pythonanywhere.com/apis/v1/category/$cat_id/$region/'));
+  Future<List<Short_ad>> _load_ad(String url) async {
+    final allResponse = await http.get(Uri.parse(url));
     if (allResponse.statusCode == 200) {
       var jsonData = jsonDecode(utf8.decode(allResponse.bodyBytes));
+      var result = jsonData['results'];
       List<Short_ad> listAd = [];
       for (Map<String, dynamic> i in jsonData) {
         Short_ad shortAd = Short_ad(
@@ -183,14 +309,19 @@ class CategoryTabState extends State<CategoryTab> {
             i['price'],
             i['valute'].toString(),
             [],
-            i['region'].toString());
+            i['region'].toString(),i['date']);
         for (Map<String, dynamic> s in i['images_set']) {
           shortAd.images.add(s['image']);
         }
         listAd.add(shortAd);
       }
+      var _count_page = (jsonData['count'] ) ~/ 4;
+      if (jsonData['count'] % 4 != 0) _count_page++;
       setState(() {
-        request_status = 1;
+        _count_ad = _count_page;
+        _next_url = jsonData['next'];
+        _prev_url = jsonData['previous'];
+        request_status =1;
       });
       return listAd;
     } else {

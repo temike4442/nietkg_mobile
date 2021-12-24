@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'package:nietkg/my_image_view.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 import 'package:flutter/material.dart';
 import 'includes/Ad.dart';
 import 'package:http/http.dart' as http;
