@@ -31,8 +31,8 @@ class CategoryTabState extends State<CategoryTab> {
   void initState() {
     super.initState();
     category = widget.cat_id;
-    list_ad = _load_ad('https://temike.pythonanywhere.com/apis/v1/category/$category/$region/');
-    story_list = get_stories('https://temike.pythonanywhere.com/apis/v1/story_list/$category');
+    list_ad = _load_ad('https://jaria.kg/apis/v1/category/$category/$region/');
+    story_list = get_stories('https://jaria.kg/apis/v1/story_list/$category');
     list_category = getCategories();
     list_region = getRegions();
   }
@@ -87,12 +87,12 @@ class CategoryTabState extends State<CategoryTab> {
             ElevatedButton(
                 onPressed: is_change ? () {
                   FocusScope.of(context).requestFocus(FocusNode());
-                  story_list = get_stories('https://temike.pythonanywhere.com/apis/v1/story_list/$category');
+                  story_list = get_stories('https://jaria.kg/apis/v1/story_list/$category');
                   setState(() {
                     request_status = 0;
                     is_change = false;
                   });
-                  list_ad = _load_ad('https://temike.pythonanywhere.com/apis/v1/category/$category/$region/');
+                  list_ad = _load_ad('https://jaria.kg/apis/v1/category/$category/$region/');
                 } : null,
                 child: Text('Применить')),
             Divider(),

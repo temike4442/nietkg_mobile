@@ -144,7 +144,7 @@ class AdDetailState extends State<AdDetail> {
 
   Future<Ad?> load_ad(String pk) async {
     final allResponse = await http
-        .get(Uri.parse('http://temike.pythonanywhere.com/apis/v1/' + pk));
+        .get(Uri.parse('http://jaria.kg/apis/v1/' + pk));
     if (allResponse.statusCode == 200) {
       var data = jsonDecode(utf8.decode(allResponse.bodyBytes));
       Ad _ad = Ad(

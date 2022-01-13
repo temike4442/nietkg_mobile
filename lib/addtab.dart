@@ -341,7 +341,7 @@ Future postData() async {
           await FlutterAbsolutePath.getAbsolutePath(images[i].identifier)));
     }
   }
-  String url = 'http://temike.pythonanywhere.com/apis/v1/create/';
+  String url = 'http://jaria.kg/apis/v1/create/';
 
   FormData formData = new FormData.fromMap({
     "title": titleController.text,

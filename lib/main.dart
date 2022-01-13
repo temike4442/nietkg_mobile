@@ -77,7 +77,7 @@ class MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    list_ad = get_ads('http://temike.pythonanywhere.com/apis/v1/');
+    list_ad = get_ads('http://jaria.kg/apis/v1/');
     list_category = getCategories();
     list_region = getRegions();
   }
@@ -88,7 +88,7 @@ class MainScreenState extends State<MainScreen> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text(
-          'NIETKG',
+          'Jaria KG',
           style: TextStyle(color: Colors.black),
         ),
         centerTitle: true,
@@ -209,7 +209,7 @@ class MainScreenState extends State<MainScreen> {
               Container(
                   height: 110,
                   child: FutureBuilder(
-                      future: get_stories('http://temike.pythonanywhere.com/apis/v1/story_list'),
+                      future: get_stories('http://jaria.kg/apis/v1/story_list'),
                       builder: (context, AsyncSnapshot snapshot) {
                         if (snapshot.hasData) {
                           return ListView.builder(
@@ -601,10 +601,10 @@ class MainScreenState extends State<MainScreen> {
     String url = '';
     if (text != '') {
       url =
-          'https://temike.pythonanywhere.com/apis/v1/search/$text/$region/$category/';
+          'https://jaria.kg/apis/v1/search/$text/$region/$category/';
     } else {
       url =
-          'https://temike.pythonanywhere.com/apis/v1/category/$category/$region/';
+          'https://jaria.kg/apis/v1/category/$category/$region/';
     }
     final allResponse = await http.get(Uri.parse(url));
     if (allResponse.statusCode == 200) {
