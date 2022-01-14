@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:nietkg/about.dart';
 import 'package:nietkg/addtab.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:nietkg/log.dart';
 import 'addetail.dart';
 import 'story_view/store_page_view.dart';
 import 'includes/loads.dart';
@@ -39,20 +41,19 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     Timer(
-        Duration(seconds: 2),
+        Duration(seconds: 3),
         () => Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => MainScreen())));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        color: Colors.white,
-        child: FlutterLogo(
-          size: MediaQuery.of(context).size.height,
+    return SizedBox.expand(
+        child: Container(
+          color: Colors.white,
+          child:
+          Center(child: Image.asset('assets/images/launch.png')),
         ),
-      ),
     );
   }
 }
@@ -91,12 +92,28 @@ class MainScreenState extends State<MainScreen> {
           'Jaria KG',
           style: TextStyle(color: Colors.black),
         ),
-        centerTitle: true,
         actions: [
           IconButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => LogPage()));
+              },
               icon: Icon(
-                Icons.account_box_outlined,
+                Icons.space_dashboard_outlined,
+                size: 35,
+                color: Colors.black,
+              )),
+          IconButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => AboutPage()));
+              },
+              icon: Icon(
+                Icons.mark_email_read_outlined,
                 size: 35,
                 color: Colors.black,
               )),
@@ -601,10 +618,10 @@ class MainScreenState extends State<MainScreen> {
     String url = '';
     if (text != '') {
       url =
-          'https://jaria.kg/apis/v1/search/$text/$region/$category/';
+          'http://jaria.kg/apis/v1/search/$text/$region/$category/';
     } else {
       url =
-          'https://jaria.kg/apis/v1/category/$category/$region/';
+          'http://jaria.kg/apis/v1/category/$category/$region/';
     }
     final allResponse = await http.get(Uri.parse(url));
     if (allResponse.statusCode == 200) {
