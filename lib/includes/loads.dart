@@ -7,7 +7,7 @@ import '../includes/Ad.dart';
 
 Future<List<DropdownMenuItem>> getRegions() async {
   final allResponse = await http
-      .get(Uri.parse('http://jaria.kg/apis/v1/region_list'));
+      .get(Uri.parse('https://jaria.kg/apis/v1/region_list'));
   List<DropdownMenuItem> listregion = [];
   if (allResponse.statusCode == 200) {
     var jsonData = jsonDecode(utf8.decode(allResponse.bodyBytes));
@@ -48,7 +48,7 @@ Future<List<Story>> get_stories(String url) async {
 Future<List<DropdownMenuItem>> getCategories() async {
   List<DropdownMenuItem> listcategory = [];
   final allResponse = await http
-      .get(Uri.parse('http://jaria.kg/apis/v1/category_list'));
+      .get(Uri.parse('https://jaria.kg/apis/v1/category_list'));
   if (allResponse.statusCode == 200) {
     var jsonData = jsonDecode(utf8.decode(allResponse.bodyBytes));
     listcategory
@@ -67,10 +67,10 @@ Future<List<DropdownMenuItem>> getCategories() async {
 
 Future<List<Category>> getCategories_menu() async {
   List<Category> listcategory = [
-    Category(999, 'Все', 'http://jaria.kg/media/icons/all.png')
+    Category(999, 'Все', 'https://jaria.kg/media/icons/all.png')
   ];
   final allResponse = await http
-      .get(Uri.parse('http://jaria.kg/apis/v1/category_list'));
+      .get(Uri.parse('https://jaria.kg/apis/v1/category_list'));
   if (allResponse.statusCode == 200) {
     var jsonData = jsonDecode(utf8.decode(allResponse.bodyBytes));
     for (Map<String, dynamic> i in jsonData) {
@@ -85,7 +85,7 @@ Future<List<Category>> getCategories_menu() async {
 
 Future<List<DropdownMenuItem>> getValutes() async {
   final allResponse = await http
-      .get(Uri.parse('http://jaria.kg/apis/v1/valute_list'));
+      .get(Uri.parse('https://jaria.kg/apis/v1/valute_list'));
   if (allResponse.statusCode == 200) {
     var jsonData = jsonDecode(utf8.decode(allResponse.bodyBytes));
     List<DropdownMenuItem> listvalute = [];

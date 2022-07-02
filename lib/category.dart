@@ -31,8 +31,8 @@ class CategoryTabState extends State<CategoryTab> {
   void initState() {
     super.initState();
     category = widget.cat_id;
-    list_ad = _load_ad('http://jaria.kg/apis/v1/category/$category/$region/');
-    story_list = get_stories('http://jaria.kg/apis/v1/story_list/$category');
+    list_ad = _load_ad('https://jaria.kg/apis/v1/category/$category/$region/');
+    story_list = get_stories('https://jaria.kg/apis/v1/story_list/$category');
     list_category = getCategories();
     list_region = getRegions();
   }
@@ -92,7 +92,7 @@ class CategoryTabState extends State<CategoryTab> {
                     request_status = 0;
                     is_change = false;
                   });
-                  list_ad = _load_ad('http://jaria.kg/apis/v1/category/$category/$region/');
+                  list_ad = _load_ad('https://jaria.kg/apis/v1/category/$category/$region/');
                 } : null,
                 child: Text('Применить')),
             Divider(),
@@ -183,11 +183,21 @@ class CategoryTabState extends State<CategoryTab> {
                     itemBuilder: (BuildContext context, int index) {
                       return ListTile(
                         contentPadding: EdgeInsets.all(1.0),
-                        title: Text(snapshot.data[index].title,style: TextStyle(fontSize: 13,fontWeight: FontWeight.w600),),
-                        leading: snapshot.data[index].images.length == 0
-                            ? Image.asset('assets/images/no_image.jpg',width: 90)
-                            : Image.network(
-                          snapshot.data[index].images[0].toString(),
+                        title: Text(
+                          snapshot.data[index].title,
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        leading: snapshot.data[index].images.length ==
+                            0
+                            ? Image.asset(
+                            'assets/images/no_image.jpg',
+                            width: 90)
+                            :
+                        Image.network(
+                          snapshot.data[index].images[0]
+                              .toString(),
                           width: 90,
                         ),
                         subtitle: snapshot.data[index].price
@@ -195,12 +205,20 @@ class CategoryTabState extends State<CategoryTab> {
                             '0'
                             ? Column(
                           children: [
+                            snapshot.data[index].is_vip == 'true' ?
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.lightBlueAccent,borderRadius: BorderRadius.circular(5),),
+                              child: Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: Text('VIP'),
+                              ),):SizedBox(),
                             SizedBox(height: 10,),
                             Row(
                               mainAxisAlignment:
                               MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(snapshot.data[index].region),
+                                SizedBox(width: 135,child:Text(snapshot.data[index].region),),
                                 Text(
                                   'Договорная',
                                   style: TextStyle(
@@ -211,7 +229,8 @@ class CategoryTabState extends State<CategoryTab> {
                             ),
                             SizedBox(height: 10,),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment
+                                  .center,
                               children: [
                                 Text(snapshot.data[index].date),
                               ],
@@ -220,12 +239,20 @@ class CategoryTabState extends State<CategoryTab> {
                         )
                             : Column(
                           children: [
+                            snapshot.data[index].is_vip == 'true' ?
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.lightBlueAccent,borderRadius: BorderRadius.circular(5),),
+                              child: Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: Text('VIP',),
+                              ),):SizedBox(),
                             SizedBox(height: 10,),
                             Row(
                               mainAxisAlignment:
                               MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(snapshot.data[index].region),
+                                SizedBox(width: 135,child:Text(snapshot.data[index].region),),
                                 Row(
                                   children: [
                                     Text(
@@ -255,7 +282,8 @@ class CategoryTabState extends State<CategoryTab> {
                             ),
                             SizedBox(height: 10,),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment
+                                  .center,
                               children: [
                                 Text(snapshot.data[index].date),
                               ],
@@ -266,9 +294,12 @@ class CategoryTabState extends State<CategoryTab> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => AdDetail(
-                                      pk: snapshot.data[index].pk,
-                                      title: snapshot.data[index].title)));
+                                  builder: (context) =>
+                                      AdDetail(
+                                          pk: snapshot.data[index].pk,
+                                          title:
+                                          snapshot.data[index]
+                                              .title)));
                         },
                       );
                     },
@@ -369,14 +400,14 @@ class CategoryTabState extends State<CategoryTab> {
             i['price'],
             i['valute'].toString(),
             [],
-            i['region'].toString(),i['date']);
+            i['region'].toString(),i['date'],i['is_vip'].toString());
         for (Map<String, dynamic> s in i['images_set']) {
           shortAd.images.add(s['image']);
         }
         listAd.add(shortAd);
       }
-      var _count_page = (jsonData['count'] ) ~/ 4;
-      if (jsonData['count'] % 4 != 0) _count_page++;
+      var _count_page = (jsonData['count'] ) ~/ 20;
+      if (jsonData['count'] % 20 != 0) _count_page++;
       setState(() {
         _count_ad = _count_page;
         _next_url = jsonData['next'];

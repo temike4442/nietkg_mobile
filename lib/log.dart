@@ -24,7 +24,7 @@ class _LogPageState extends State<LogPage>{
   @override
   void initState() {
     super.initState();
-    list_trigger = get_triggers('http://www.jaria.kg/apis/v1/triggers/');
+    list_trigger = get_triggers('https://www.jaria.kg/apis/v1/triggers/');
   }
 
   @override
@@ -35,51 +35,54 @@ class _LogPageState extends State<LogPage>{
        physics: ScrollPhysics(),
       child: requeststatus == 1
            ? CircularProgressIndicator()
-           : FutureBuilder(
+           : Padding(
+             padding: const EdgeInsets.all(8.0),
+             child: FutureBuilder(
          future: list_trigger,
          builder: (context, AsyncSnapshot snapshot) {
-           if (snapshot.hasData && snapshot.data.length != 0) {
-             return ListView.separated(
-               separatorBuilder:
-                   (BuildContext context, int index) => Divider(),
-               scrollDirection: Axis.vertical,
-               physics: NeverScrollableScrollPhysics(),
-               shrinkWrap: true,
-               itemCount: snapshot.data.length,
-               itemBuilder: (BuildContext context, int index) {
-                 return ListTile(
-                   contentPadding: EdgeInsets.all(1.0),
-                   title: Text(
-                     snapshot.data[index].title,
-                     style: TextStyle(
-                         fontSize: 13,
-                         fontWeight: FontWeight.w600),
+             if (snapshot.hasData && snapshot.data.length != 0) {
+               return ListView.separated(
+                 separatorBuilder:
+                     (BuildContext context, int index) => Divider(),
+                 scrollDirection: Axis.vertical,
+                 physics: NeverScrollableScrollPhysics(),
+                 shrinkWrap: true,
+                 itemCount: snapshot.data.length,
+                 itemBuilder: (BuildContext context, int index) {
+                   return ListTile(
+                     contentPadding: EdgeInsets.all(1.0),
+                     title: Text(
+                       snapshot.data[index].title,
+                       style: TextStyle(
+                           fontSize: 13,
+                           fontWeight: FontWeight.w600),
+                     ),
+                     subtitle: Text(snapshot.data[index].date),
+                     onTap: () {
+                     },
+                   );
+                 },
+               );
+             } else if (snapshot.hasData) {
+               return Column(
+                 children: [
+                   SizedBox(
+                     height: 20,
                    ),
-                   subtitle: Text(snapshot.data[index].date),
-                   onTap: () {
-                   },
-                 );
-               },
-             );
-           } else if (snapshot.hasData) {
-             return Column(
-               children: [
-                 SizedBox(
-                   height: 20,
-                 ),
-                 Text(
-                   'Не дал результатов',
-                   style:
-                   TextStyle(color: Colors.red, fontSize: 16),
-                 ),
-               ],
-             );
-           } else if (snapshot.hasError) {
-             return Text("${snapshot.error}");
-           }
-           return CircularProgressIndicator();
+                   Text(
+                     'Не дал результатов',
+                     style:
+                     TextStyle(color: Colors.red, fontSize: 16),
+                   ),
+                 ],
+               );
+             } else if (snapshot.hasError) {
+               return Text("${snapshot.error}");
+             }
+             return CircularProgressIndicator();
          },
        ),
+           ),
      ),
    );
   }

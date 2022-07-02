@@ -117,6 +117,9 @@ class AdDetailState extends State<AdDetail> {
                     lineWidget('Регион: ', snapshot.data.region.toString(),
                         Colors.black),
                     Divider(),
+                    lineWidget('Дата: ', snapshot.data.date.toString(),
+                        Colors.black),
+                    Divider(),
                     Wrap(
                       children: [
                         Text('Адрес: ',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),),
@@ -144,7 +147,7 @@ class AdDetailState extends State<AdDetail> {
 
   Future<Ad?> load_ad(String pk) async {
     final allResponse = await http
-        .get(Uri.parse('http://jaria.kg/apis/v1/' + pk));
+        .get(Uri.parse('https://jaria.kg/apis/v1/' + pk));
     if (allResponse.statusCode == 200) {
       var data = jsonDecode(utf8.decode(allResponse.bodyBytes));
       Ad _ad = Ad(

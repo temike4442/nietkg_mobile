@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:nietkg/about.dart';
 import 'package:nietkg/addtab.dart';
 import 'package:http/http.dart' as http;
@@ -10,6 +11,7 @@ import 'story_view/store_page_view.dart';
 import 'includes/loads.dart';
 import 'category.dart';
 import 'includes/Ad.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 void main() {
   runApp(MyApp());
@@ -60,6 +62,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
 class MainScreen extends StatefulWidget {
   MainScreenState createState() => MainScreenState();
+  late Future<List<Short_ad>> list_ad;
+  late Future<List<DropdownMenuItem>> list_category;
+  late Future<List<DropdownMenuItem>> list_region;
 }
 
 class MainScreenState extends State<MainScreen> {
@@ -71,16 +76,25 @@ class MainScreenState extends State<MainScreen> {
   int _index_page = 1;
   String _prev_url = '';
   String _next_url = '';
-  late Future<List<Short_ad>> list_ad;
-  late Future<List<DropdownMenuItem>> list_category;
-  late Future<List<DropdownMenuItem>> list_region;
+  int connect_internet = 0;
 
   @override
   void initState() {
     super.initState();
-    list_ad = get_ads('http://jaria.kg/apis/v1/');
-    list_category = getCategories();
-    list_region = getRegions();
+    check_internet();
+    widget.list_ad = get_ads('https://jaria.kg/apis/v1/');
+    widget.list_category = getCategories();
+    widget.list_region = getRegions();
+  }
+
+  Future<bool> check_internet() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 
   @override
@@ -88,6 +102,8 @@ class MainScreenState extends State<MainScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
+        leading: Image.asset('assets/images/launch.png',
+            width: 90),
         title: Text(
           'Jaria KG',
           style: TextStyle(color: Colors.black),
@@ -103,7 +119,7 @@ class MainScreenState extends State<MainScreen> {
               icon: Icon(
                 Icons.space_dashboard_outlined,
                 size: 35,
-                color: Colors.black,
+                color: Colors.green,
               )),
           IconButton(
               onPressed: () {
@@ -113,383 +129,456 @@ class MainScreenState extends State<MainScreen> {
                         builder: (context) => AboutPage()));
               },
               icon: Icon(
-                Icons.mark_email_read_outlined,
+                Icons.account_balance,
                 size: 35,
-                color: Colors.black,
+                color: Colors.green,
               )),
         ],
         backgroundColor: Colors.grey[50],
       ),
-      body: SingleChildScrollView(
-        physics: ScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              SizedBox(
-                height: 10,
-              ),
-              Row(
-                children: [
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      primary: Colors.pink,
-                    ),
-                    onPressed: () {
-                      showFilterDialog(context);
-                    },
-                    child: Column(
-                      children: <Widget>[
-                        Icon(
-                          Icons.tune,
+      body: RefreshIndicator(
+        displacement: 50,
+        backgroundColor: Colors.white,
+        color: Colors.green,
+        triggerMode: RefreshIndicatorTriggerMode.onEdge,
+        onRefresh: () async{
+          widget.list_ad = get_ads('https://jaria.kg/apis/v1/');
+          setState(() {
+
+          });
+        },
+        child: SingleChildScrollView(
+          physics: ScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: FutureBuilder(
+                future: check_internet(),
+                builder: (context,AsyncSnapshot snapshot) {
+                  if (snapshot.data == false) {
+                    return Center(child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Нет подключения к интернету'),
+                        ElevatedButton(onPressed: () {
+                          check_internet();
+                            setState(() {
+                              widget.list_ad =
+                                  get_ads('https://jaria.kg/apis/v1/');
+                              widget.list_category = getCategories();
+                              widget.list_region = getRegions();
+                            });
+                        }, child: Text('Повторить'))
+                      ],
+                    ),);
+                  }
+                  else
+                    return Column(
+                      children: [
+                        SizedBox(
+                          height: 10,
+                        ),
+
+                        Row(
+                          children: [
+                            TextButton(
+                              style: TextButton.styleFrom(
+                                primary: Colors.pink,
+                              ),
+                              onPressed: () {
+                                showFilterDialog(context);
+                              },
+                              child: Column(
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.tune,
+                                    color: Colors.black,
+                                  ),
+                                  Text(
+                                    "Фильтр",
+                                    style: TextStyle(color: Colors.black),
+                                  )
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                                child: TextField(
+                                  controller: searchController,
+                                  decoration: InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      labelText: 'Поиск...'),
+                                )),
+                            IconButton(
+                                onPressed: () {
+                                  FocusScope.of(context).requestFocus(
+                                      FocusNode());
+                                  setState(() {
+                                    requeststatus = 1;
+                                    _index_page = 1;
+                                  });
+                                  widget.list_ad = search_ad();
+                                },
+                                icon: Icon(Icons.search_sharp))
+                          ],
+                        ),
+                        Divider(
+                          height: 10,
                           color: Colors.black,
                         ),
-                        Text(
-                          "Фильтр",
-                          style: TextStyle(color: Colors.black),
-                        )
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                      child: TextField(
-                    controller: searchController,
-                    decoration: InputDecoration(
-                        border: OutlineInputBorder(), labelText: 'Поиск...'),
-                  )),
-                  IconButton(
-                      onPressed: () {
-                        FocusScope.of(context).requestFocus(FocusNode());
-                        setState(() {
-                          requeststatus = 1;
-                          _index_page = 1;
-                        });
-                        list_ad = search_ad();
-                      },
-                      icon: Icon(Icons.search_sharp))
-                ],
-              ),
-              Divider(
-                height: 10,
-                color: Colors.black,
-              ),
-              Container(
-                height: 90,
-                child: FutureBuilder(
-                    future: getCategories_menu(),
-                    builder: (context, AsyncSnapshot snapshot) {
-                      if (snapshot.hasData) {
-                        return ListView.separated(
-                          shrinkWrap: true,
-                          itemCount: snapshot.data!.length,
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) {
-                            return GestureDetector(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.black12,
-                                      borderRadius: BorderRadius.circular(8)),
-                                  width: 90,
-                                  child: Column(
-                                    children: [
-                                      Image.network(
-                                          snapshot.data[index].icon.toString()),
-                                      Text(
-                                        snapshot.data[index].title,
-                                        style: TextStyle(fontSize: 10),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => CategoryTab(
-                                              snapshot.data[index].id)));
-                                });
-                          },
-                          separatorBuilder: (BuildContext context, int index) {
-                            return SizedBox(
-                              width: 7,
-                            );
-                          },
-                        );
-                      } else
-                        return CircularProgressIndicator();
-                    }),
-              ),
-              Divider(
-                height: 10,
-                color: Colors.black,
-              ),
-              Container(
-                  height: 110,
-                  child: FutureBuilder(
-                      future: get_stories('http://jaria.kg/apis/v1/story_list'),
-                      builder: (context, AsyncSnapshot snapshot) {
-                        if (snapshot.hasData) {
-                          return ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: snapshot.data.length,
-                            scrollDirection: Axis.horizontal,
-                            itemBuilder: (context, index) {
-                              return Container(
-                                decoration: BoxDecoration(
-                                    border:
-                                        Border.all(color: Colors.blueAccent)),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: GestureDetector(
-                                      child: Column(
-                                        children: [
-                                          CircleAvatar(
-                                            backgroundColor: Colors.red[300],
-                                            radius: 28.0,
-                                            child: snapshot.data[index].items[0]
-                                                        .type ==
-                                                    'jpg'
-                                                ? CircleAvatar(
-                                                    backgroundImage:
+                        Container(
+                          height: 90,
+                          child: FutureBuilder(
+                              future: getCategories_menu(),
+                              builder: (context, AsyncSnapshot snapshot) {
+                                if (snapshot.hasData) {
+                                  return ListView.separated(
+                                    shrinkWrap: true,
+                                    itemCount: snapshot.data!.length,
+                                    scrollDirection: Axis.horizontal,
+                                    itemBuilder: (context, index) {
+                                      return GestureDetector(
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                                color: Colors.black12,
+                                                borderRadius: BorderRadius
+                                                    .circular(8)),
+                                            width: 90,
+                                            child: Column(
+                                              children: [
+                                                Image.network(
+                                                    snapshot.data[index].icon
+                                                        .toString()),
+                                                Text(
+                                                  snapshot.data[index].title,
+                                                  style: TextStyle(fontSize: 10),
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        CategoryTab(
+                                                            snapshot.data[index]
+                                                                .id)));
+                                          });
+                                    },
+                                    separatorBuilder: (BuildContext context,
+                                        int index) {
+                                      return SizedBox(
+                                        width: 7,
+                                      );
+                                    },
+                                  );
+                                } else
+                                  return CircularProgressIndicator();
+                              }),
+                        ),
+                        Divider(
+                          height: 10,
+                          color: Colors.black,
+                        ),
+                        Container(
+                            height: 110,
+                            child: FutureBuilder(
+                                future: get_stories(
+                                    'https://jaria.kg/apis/v1/story_list'),
+                                builder: (context, AsyncSnapshot snapshot) {
+                                  if (snapshot.hasData) {
+                                    return ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount: snapshot.data.length,
+                                      scrollDirection: Axis.horizontal,
+                                      itemBuilder: (context, index) {
+                                        return Container(
+                                          decoration: BoxDecoration(
+                                              border:
+                                              Border.all(
+                                                  color: Colors.blueAccent)),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(4.0),
+                                            child: GestureDetector(
+                                                child: Column(
+                                                  children: [
+                                                    CircleAvatar(
+                                                      backgroundColor: Colors
+                                                          .red[300],
+                                                      radius: 28.0,
+                                                      child: snapshot.data[index]
+                                                          .items[0]
+                                                          .type ==
+                                                          'jpg'
+                                                          ? CircleAvatar(
+                                                        backgroundImage:
                                                         NetworkImage(snapshot
                                                             .data[index]
                                                             .items[0]
                                                             .src
                                                             .toString()),
-                                                    radius: 26.0,
-                                                  )
-                                                : CircleAvatar(
-                                                    backgroundColor:
+                                                        radius: 26.0,
+                                                      )
+                                                          : CircleAvatar(
+                                                        backgroundColor:
                                                         Colors.green,
-                                                    radius: 22.0,
-                                                  ),
+                                                        radius: 22.0,
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 90,
+                                                      child: Text(
+                                                        snapshot.data[index]
+                                                            .title,
+                                                        style: TextStyle(
+                                                            fontSize: 8),
+                                                        maxLines: 4,
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                                onTap: () {
+                                                  Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              StoryPageView(
+                                                                  story: snapshot
+                                                                      .data[index]
+                                                                      .items)));
+                                                }),
                                           ),
-                                          SizedBox(
-                                            width: 90,
-                                            child: Text(
-                                              snapshot.data[index].title,
-                                              style: TextStyle(fontSize: 8),
-                                              maxLines: 4,
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                      onTap: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    StoryPageView(
-                                                        story: snapshot
-                                                            .data[index]
-                                                            .items)));
-                                      }),
-                                ),
-                              );
-                            },
-                          );
-                        } else
-                          return CircularProgressIndicator();
-                      })),
-              Divider(
-                height: 10,
-                color: Colors.black,
-              ),
-              requeststatus == 1
-                  ? CircularProgressIndicator()
-                  : FutureBuilder(
-                      future: list_ad,
-                      builder: (context, AsyncSnapshot snapshot) {
-                        if (snapshot.hasData && snapshot.data.length != 0) {
-                          return ListView.separated(
-                            separatorBuilder:
-                                (BuildContext context, int index) => Divider(),
-                            scrollDirection: Axis.vertical,
-                            physics: NeverScrollableScrollPhysics(),
-                            shrinkWrap: true,
-                            itemCount: snapshot.data.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return ListTile(
-                                contentPadding: EdgeInsets.all(1.0),
-                                title: Text(
-                                  snapshot.data[index].title,
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600),
-                                ),
-                                leading: snapshot.data[index].images.length == 0
-                                    ? Image.asset('assets/images/no_image.jpg',
+                                        );
+                                      },
+                                    );
+                                  } else
+                                    return CircularProgressIndicator();
+                                })),
+                        Divider(
+                          height: 10,
+                          color: Colors.black,
+                        ),
+                        requeststatus == 1
+                            ? CircularProgressIndicator()
+                            : FutureBuilder(
+                          future: widget.list_ad,
+                          builder: (context, AsyncSnapshot snapshot) {
+                            if (snapshot.hasData && snapshot.data.length != 0) {
+                              return ListView.separated(
+                                separatorBuilder:
+                                    (BuildContext context, int index) =>
+                                    Divider(),
+                                scrollDirection: Axis.vertical,
+                                physics: NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: snapshot.data.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  return ListTile(
+                                    contentPadding: EdgeInsets.all(1.0),
+                                    title: Text(
+                                      snapshot.data[index].title,
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                    leading: snapshot.data[index].images.length ==
+                                        0
+                                        ? Image.asset(
+                                        'assets/images/no_image.jpg',
                                         width: 90)
-                                    : Image.network(
-                                        snapshot.data[index].images[0]
-                                            .toString(),
-                                        width: 90,
-                                      ),
-                                subtitle: snapshot.data[index].price
-                                            .toString() ==
+                                        :
+                                    Image.network(
+                                      snapshot.data[index].images[0]
+                                          .toString(),
+                                      width: 90,
+                                    ),
+                                    subtitle: snapshot.data[index].price
+                                        .toString() ==
                                         '0'
-                                    ? Column(
-                                        children: [
-                                          SizedBox(height: 10,),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(snapshot.data[index].region),
-                                              Text(
-                                                'Договорная',
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.deepOrange),
-                                              )
-                                            ],
-                                          ),
-                                          SizedBox(height: 10,),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Text(snapshot.data[index].date),
-                                            ],
-                                          )
-                                        ],
-                                      )
-                                    : Column(
-                                        children: [
-                                          SizedBox(height: 10,),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(snapshot.data[index].region),
-                                              Row(
-                                                children: [
-                                                  Text(
-                                                    snapshot.data[index].price
-                                                        .toString(),
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        color:
-                                                            Colors.deepOrange),
-                                                  ),
-                                                  SizedBox(
-                                                    width: 5,
-                                                  ),
-                                                  Text(
-                                                    snapshot.data[index].valute
-                                                        .toString(),
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        color:
-                                                            Colors.deepOrange),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(height: 10,),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Text(snapshot.data[index].date),
-                                            ],
-                                          )
-                                        ],
-                                      ),
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => AdDetail(
-                                              pk: snapshot.data[index].pk,
-                                              title:
-                                                  snapshot.data[index].title)));
+                                        ? Column(
+                                      children: [
+                                        snapshot.data[index].is_vip == 'true' ?
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.lightBlueAccent,borderRadius: BorderRadius.circular(5),),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(2.0),
+                                            child: Text('VIP'),
+                                          ),):SizedBox(),
+                                        SizedBox(height: 10,),
+                                        Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            SizedBox(width: 135,child:Text(snapshot.data[index].region),),
+                                            Text(
+                                              'Договорная',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.deepOrange),
+                                            )
+                                          ],
+                                        ),
+                                        SizedBox(height: 10,),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment
+                                              .center,
+                                          children: [
+                                            Text(snapshot.data[index].date),
+                                          ],
+                                        )
+                                      ],
+                                    )
+                                        : Column(
+                                      children: [
+                                            snapshot.data[index].is_vip == 'true' ?
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.lightBlueAccent,borderRadius: BorderRadius.circular(5),),
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(2.0),
+                                                child: Text('VIP',),
+                                              ),):SizedBox(),
+                                        SizedBox(height: 10,),
+                                        Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            SizedBox(width: 135,child:Text(snapshot.data[index].region),),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  snapshot.data[index].price
+                                                      .toString(),
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                      FontWeight.w600,
+                                                      color:
+                                                      Colors.deepOrange),
+                                                ),
+                                                SizedBox(
+                                                  width: 5,
+                                                ),
+                                                Text(
+                                                  snapshot.data[index].valute
+                                                      .toString(),
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                      FontWeight.w600,
+                                                      color:
+                                                      Colors.deepOrange),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 10,),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment
+                                              .center,
+                                          children: [
+                                            Text(snapshot.data[index].date),
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                    onTap: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  AdDetail(
+                                                      pk: snapshot.data[index].pk,
+                                                      title:
+                                                      snapshot.data[index]
+                                                          .title)));
+                                    },
+                                  );
                                 },
                               );
-                            },
-                          );
-                        } else if (snapshot.hasData) {
-                          return Column(
-                            children: [
-                              SizedBox(
-                                height: 20,
-                              ),
-                              Text(
-                                'Поиск не дал результатов',
-                                style:
+                            } else if (snapshot.hasData) {
+                              return Column(
+                                children: [
+                                  SizedBox(
+                                    height: 20,
+                                  ),
+                                  Text(
+                                    'Поиск не дал результатов',
+                                    style:
                                     TextStyle(color: Colors.red, fontSize: 16),
+                                  ),
+                                ],
+                              );
+                            } else if (snapshot.hasError) {
+                              return Text("${snapshot.error}");
+                            }
+                            return CircularProgressIndicator();
+                          },
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        Text('Страница $_index_page из $_count_ad'),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            if (_prev_url == null || _prev_url == '')
+                              TextButton.icon(
+                                  onPressed: null,
+                                  icon: Icon(Icons.navigate_before),
+                                  label: Text('Пред.'))
+                            else
+                              TextButton.icon(
+                                onPressed: () {
+                                  setState(() {
+                                    requeststatus = 1;
+                                    _index_page--;
+                                  });
+                                  widget.list_ad = get_ads(_prev_url);
+                                },
+                                icon: Icon(
+                                  Icons.navigate_before,
+                                  color: Colors.white,
+                                ),
+                                label:
+                                Text('Пред.',
+                                    style: TextStyle(color: Colors.white)),
+                                style: TextButton.styleFrom(
+                                  backgroundColor: Colors.lightBlue,
+                                ),
                               ),
-                            ],
-                          );
-                        } else if (snapshot.hasError) {
-                          return Text("${snapshot.error}");
-                        }
-                        return CircularProgressIndicator();
-                      },
-                    ),
-              SizedBox(
-                height: 20,
-              ),
-              Text('Страница $_index_page из $_count_ad'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  if (_prev_url == null || _prev_url == '')
-                    TextButton.icon(
-                        onPressed: null,
-                        icon: Icon(Icons.navigate_before),
-                        label: Text('Пред.'))
-                  else
-                    TextButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          requeststatus = 1;
-                          _index_page--;
-                        });
-                        list_ad = get_ads(_prev_url);
-                      },
-                      icon: Icon(
-                        Icons.navigate_before,
-                        color: Colors.white,
-                      ),
-                      label:
-                          Text('Пред.', style: TextStyle(color: Colors.white)),
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.lightBlue,
-                      ),
-                    ),
-                  if (_next_url == null || _next_url == '')
-                    TextButton.icon(
-                        onPressed: null,
-                        icon: Icon(Icons.navigate_next),
-                        label: Text('След.'))
-                  else
-                    TextButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            requeststatus = 1;
-                            _index_page++;
-                          });
-                          list_ad = get_ads(_next_url);
-                        },
-                        icon: Icon(
-                          Icons.navigate_next,
-                          color: Colors.white,
+                            if (_next_url == null || _next_url == '')
+                              TextButton.icon(
+                                  onPressed: null,
+                                  icon: Icon(Icons.navigate_next),
+                                  label: Text('След.'))
+                            else
+                              TextButton.icon(
+                                  onPressed: () {
+                                    setState(() {
+                                      requeststatus = 1;
+                                      _index_page++;
+                                    });
+                                    widget.list_ad = get_ads(_next_url);
+                                  },
+                                  icon: Icon(
+                                    Icons.navigate_next,
+                                    color: Colors.white,
+                                  ),
+                                  label: Text(
+                                    'След.',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.lightBlue,
+                                  )),
+                          ],
                         ),
-                        label: Text(
-                          'След.',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        style: TextButton.styleFrom(
-                          backgroundColor: Colors.lightBlue,
-                        )),
-                ],
-              ),
-              SizedBox(
-                height: 70,
-              )
-            ],
+                        SizedBox(
+                          height: 70,
+                        )
+                      ],
+                    );
+                }),
           ),
         ),
       ),
@@ -529,7 +618,7 @@ class MainScreenState extends State<MainScreen> {
                       height: 20,
                     ),
                     FutureBuilder(
-                      future: list_region,
+                      future: widget.list_region,
                       builder: (context, AsyncSnapshot snapshot) {
                         return DropdownButtonFormField<dynamic>(
                           value: region,
@@ -546,7 +635,7 @@ class MainScreenState extends State<MainScreen> {
                       height: 20,
                     ),
                     FutureBuilder(
-                      future: list_category,
+                      future: widget.list_category,
                       builder: (context, AsyncSnapshot snapshot) {
                         return DropdownButtonFormField<dynamic>(
                           value: category,
@@ -589,16 +678,16 @@ class MainScreenState extends State<MainScreen> {
       List<Short_ad> listAd = [];
       for (Map<String, dynamic> i in result) {
         Short_ad shortAd = Short_ad(i['pk'], i['title'], i['price'],
-            i['valute'].toString(), [], i['region'].toString(), i['date']);
+            i['valute'].toString(), [], i['region'].toString(), i['date'],i['is_vip'].toString());
         for (Map<String, dynamic> s in i['images_set']) {
           shortAd.images.add(s['image']);
         }
         listAd.add(shortAd);
       }
-      var _count_page = (jsonData['count']) ~/ 4;
-      if (jsonData['count'] % 4 != 0) _count_page++;
+      var CountPage = (jsonData['count']) ~/ 20;
+      if (jsonData['count'] % 20 != 0) CountPage++;
       setState(() {
-        _count_ad = _count_page;
+        _count_ad = CountPage;
         _next_url = jsonData['next'];
         _prev_url = jsonData['previous'];
         requeststatus = 0;
@@ -618,10 +707,10 @@ class MainScreenState extends State<MainScreen> {
     String url = '';
     if (text != '') {
       url =
-          'http://jaria.kg/apis/v1/search/$text/$region/$category/';
+          'https://jaria.kg/apis/v1/search/$text/$region/$category/';
     } else {
       url =
-          'http://jaria.kg/apis/v1/category/$category/$region/';
+          'https://jaria.kg/apis/v1/category/$category/$region/';
     }
     final allResponse = await http.get(Uri.parse(url));
     if (allResponse.statusCode == 200) {
@@ -630,16 +719,16 @@ class MainScreenState extends State<MainScreen> {
       List<Short_ad> listAd = [];
       for (Map<String, dynamic> i in result) {
         Short_ad shortAd = Short_ad(i['pk'], i['title'], i['price'],
-            i['valute'].toString(), [], i['region'].toString(), i['date']);
+            i['valute'].toString(), [], i['region'].toString(), i['date'],i['is_vip'].toString());
         for (Map<String, dynamic> s in i['images_set']) {
           shortAd.images.add(s['image']);
         }
         listAd.add(shortAd);
       }
-      var _count_page = (jsonData['count']) ~/ 4;
-      if (jsonData['count'] % 4 != 0) _count_page++;
+      var CountPage = (jsonData['count']) ~/ 20;
+      if (jsonData['count'] % 20 != 0) CountPage++;
       setState(() {
-        _count_ad = _count_page;
+        _count_ad = CountPage;
         _next_url = jsonData['next'];
         _prev_url = jsonData['previous'];
         requeststatus = 0;

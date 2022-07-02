@@ -21,6 +21,8 @@ class Short_ad {
   String valute;
   String region;
   String date;
+  String is_vip;
+
   Short_ad(
     this.pk,
     this.title,
@@ -28,7 +30,8 @@ class Short_ad {
     this.valute,
     this.images,
     this.region,
-    this.date
+    this.date,
+      this.is_vip
   );
 }
 
