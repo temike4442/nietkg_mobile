@@ -113,7 +113,7 @@ class MainScreenState extends State<MainScreen> with AutomaticKeepAliveClientMix
           style: TextStyle(color: Colors.black),
         ),
         actions: [
-          IconButton(
+          /*IconButton(
               onPressed: () {
                 Navigator.push(
                     context,
@@ -124,7 +124,7 @@ class MainScreenState extends State<MainScreen> with AutomaticKeepAliveClientMix
                 Icons.space_dashboard_outlined,
                 size: 35,
                 color: Colors.green,
-              )),
+              )),*/
           IconButton(
               onPressed: () {
                 Navigator.push(
@@ -146,9 +146,9 @@ class MainScreenState extends State<MainScreen> with AutomaticKeepAliveClientMix
         color: Colors.green,
         triggerMode: RefreshIndicatorTriggerMode.onEdge,
         onRefresh: () async{
-          widget.list_ad = get_ads('https://jaria.kg/apis/v1/');
           setState(() {
-
+            requeststatus =1;
+            widget.list_ad = get_ads('https://jaria.kg/apis/v1/');
           });
         },
         child: SingleChildScrollView(
@@ -507,7 +507,7 @@ class MainScreenState extends State<MainScreen> with AutomaticKeepAliveClientMix
                                     height: 20,
                                   ),
                                   Text(
-                                    'Поиск не дал результатов',
+                                    'Издөө жыйынтык берген жок..',
                                     style:
                                     TextStyle(color: Colors.red, fontSize: 16),
                                   ),
@@ -522,7 +522,7 @@ class MainScreenState extends State<MainScreen> with AutomaticKeepAliveClientMix
                         SizedBox(
                           height: 20,
                         ),
-                        Text('Страница $_index_page из $_count_ad'),
+                        Text('$_index_page / $_count_ad'),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -530,7 +530,7 @@ class MainScreenState extends State<MainScreen> with AutomaticKeepAliveClientMix
                               TextButton.icon(
                                   onPressed: null,
                                   icon: Icon(Icons.navigate_before),
-                                  label: Text('Пред.'))
+                                  label: Text('Мурунку'))
                             else
                               TextButton.icon(
                                 onPressed: () {
@@ -545,7 +545,7 @@ class MainScreenState extends State<MainScreen> with AutomaticKeepAliveClientMix
                                   color: Colors.white,
                                 ),
                                 label:
-                                Text('Пред.',
+                                Text('Мурунку',
                                     style: TextStyle(color: Colors.white)),
                                 style: TextButton.styleFrom(
                                   backgroundColor: Colors.lightBlue,
@@ -555,7 +555,7 @@ class MainScreenState extends State<MainScreen> with AutomaticKeepAliveClientMix
                               TextButton.icon(
                                   onPressed: null,
                                   icon: Icon(Icons.navigate_next),
-                                  label: Text('След.'))
+                                  label: Text('Кийинки'))
                             else
                               TextButton.icon(
                                   onPressed: () {
@@ -570,7 +570,7 @@ class MainScreenState extends State<MainScreen> with AutomaticKeepAliveClientMix
                                     color: Colors.white,
                                   ),
                                   label: Text(
-                                    'След.',
+                                    'Кийинки',
                                     style: TextStyle(color: Colors.white),
                                   ),
                                   style: TextButton.styleFrom(
@@ -615,7 +615,7 @@ class MainScreenState extends State<MainScreen> with AutomaticKeepAliveClientMix
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Параметры поиска',
+                      'Издөө параметри',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                     ),
@@ -662,7 +662,7 @@ class MainScreenState extends State<MainScreen> with AutomaticKeepAliveClientMix
                           Navigator.of(context).pop();
                         },
                         child: Text(
-                          "Выбрать",
+                          "Тандоо",
                           style: TextStyle(color: Colors.white),
                         ),
                       ),

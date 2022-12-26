@@ -50,7 +50,7 @@ class CategoryTabState extends State<CategoryTab> {
         child: Center( child:
         Column(
           children: [
-            Text('Фильтр и поиск обьявлений'),
+            Text('Фильтрлөө'),
             SizedBox(
               height: 10,
             ),
@@ -94,7 +94,7 @@ class CategoryTabState extends State<CategoryTab> {
                   });
                   list_ad = _load_ad('https://jaria.kg/apis/v1/category/$category/$region/');
                 } : null,
-                child: Text('Применить')),
+                child: Text('Колдонуу')),
             Divider(),
             request_status==0 ? CircularProgressIndicator(): FutureBuilder(
                 future: story_list,
@@ -220,7 +220,7 @@ class CategoryTabState extends State<CategoryTab> {
                               children: [
                                 SizedBox(width: 135,child:Text(snapshot.data[index].region),),
                                 Text(
-                                  'Договорная',
+                                  'Келишим баа',
                                   style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       color: Colors.deepOrange),
@@ -311,7 +311,7 @@ class CategoryTabState extends State<CategoryTab> {
                         height: 20,
                       ),
                       Text(
-                        'Нет обьявлений',
+                        'Жарыялар табылбады..',
                         style: TextStyle(color: Colors.red, fontSize: 16),
                       ),
                     ],
@@ -322,7 +322,7 @@ class CategoryTabState extends State<CategoryTab> {
             SizedBox(
               height: 20,
             ),
-            Text('Страница $_index_page из $_count_ad'),
+            Text(' $_index_page / $_count_ad'),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -330,7 +330,7 @@ class CategoryTabState extends State<CategoryTab> {
                   TextButton.icon(
                       onPressed: null,
                       icon: Icon(Icons.navigate_before),
-                      label: Text('Пред.'))
+                      label: Text('Мурунку'))
                 else
                   TextButton.icon(
                     onPressed: () {
@@ -345,7 +345,7 @@ class CategoryTabState extends State<CategoryTab> {
                       color: Colors.white,
                     ),
                     label:
-                    Text('Пред.', style: TextStyle(color: Colors.white)),
+                    Text('Мурунку', style: TextStyle(color: Colors.white)),
                     style: TextButton.styleFrom(
                       backgroundColor: Colors.lightBlue,
                     ),
@@ -354,7 +354,7 @@ class CategoryTabState extends State<CategoryTab> {
                   TextButton.icon(
                       onPressed: null,
                       icon: Icon(Icons.navigate_next),
-                      label: Text('След.'))
+                      label: Text('Кийинки'))
                 else
                   TextButton.icon(
                       onPressed: () {
@@ -369,7 +369,7 @@ class CategoryTabState extends State<CategoryTab> {
                         color: Colors.white,
                       ),
                       label: Text(
-                        'След.',
+                        'Кийинки',
                         style: TextStyle(color: Colors.white),
                       ),
                       style: TextButton.styleFrom(

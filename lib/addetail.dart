@@ -87,7 +87,7 @@ class AdDetailState extends State<AdDetail> {
                       height: 20,
                     ),
                     Text(
-                      'Описание: \n ' + snapshot.data.content,
+                      'Мүнөздөмө: \n ' + snapshot.data.content,
                       style: TextStyle(fontSize: 15),
                     ),
                     SizedBox(
@@ -95,19 +95,21 @@ class AdDetailState extends State<AdDetail> {
                     ),
                     Divider(),
                     snapshot.data.price == 0
-                        ? lineWidget('Цена: ', 'Договорная', Colors.black)
+                        ? lineWidget('Баасыы: ', 'Келишим баа', Colors.black)
                         : lineWidget(
-                            'Цена: ',
+                            'Баасы: ',
                             snapshot.data.price.toString() +
                                 ' ' +
                                 snapshot.data.valute.toString(),
                             Colors.black),
                     Divider(),
-                    lineWidget('Имя: ', snapshot.data.name, Colors.black),
+                    lineWidget('Аты: ', snapshot.data.name, Colors.black),
+                    Divider(),
+                    lineWidget('Көрүлдү: ', snapshot.data.views, Colors.black),
                     Divider(),
                     GestureDetector(
                       child: lineWidget(
-                          'Номер тел: ', snapshot.data.number, Colors.blue),
+                          'Телефон: ', snapshot.data.number, Colors.blue),
                       onTap: () {
                         launch("tel://" + snapshot.data.number);
                       },
@@ -124,7 +126,7 @@ class AdDetailState extends State<AdDetail> {
                       children: [
                         Text('Адрес: ',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),),
                         snapshot.data.address == null
-                            ? Text('нет')
+                            ? Text('жок')
                             : Text(snapshot.data.address),
                       ],
                     ),
@@ -159,7 +161,7 @@ class AdDetailState extends State<AdDetail> {
           data['region'],
           data['address'],
           data['price'],
-          data['valute'].toString(),data['date'], []);
+          data['valute'].toString(),data['date'],data['views'], []);
       for (Map<String, dynamic> s in data['images_set']) {
         _ad.images.add(s['image']);
       }

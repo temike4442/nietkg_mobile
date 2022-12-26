@@ -8,10 +8,11 @@ class Ad {
   String address;
   String date;
   int price;
+  int views;
   String valute;
   List<String> images;
   Ad(this.title, this.content, this.category, this.number, this.name,
-      this.region, this.address, this.price, this.valute,this.date, this.images);
+      this.region, this.address, this.price, this.valute,this.date,this.views, this.images);
 }
 
 class Short_ad {
