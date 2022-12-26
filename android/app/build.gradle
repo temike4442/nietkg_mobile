@@ -31,7 +31,7 @@ apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
     }
 
     android {
-        compileSdkVersion 31
+        compileSdkVersion 33
 
         sourceSets {
             main.java.srcDirs += 'src/main/kotlin'
@@ -41,12 +41,12 @@ apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
             // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
             applicationId "com.jaria.jaria_kg"
             minSdkVersion 21
-            targetSdkVersion 30
+            targetSdkVersion 31
             versionCode flutterVersionCode.toInteger()
             versionName flutterVersionName
             multiDexEnabled true
-            versionCode 7 //для Google Play
-            versionName "1.1.6" //для пользователей
+            versionCode 8 //для Google Play
+            versionName "1.1.7" //для пользователей
         }
 
         signingConfigs {

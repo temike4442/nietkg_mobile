@@ -43,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     Timer(
-        Duration(seconds: 3),
+        Duration(seconds: 1),
         () => Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => MainScreen())));
   }
@@ -67,11 +67,15 @@ class MainScreen extends StatefulWidget {
   late Future<List<DropdownMenuItem>> list_region;
 }
 
-class MainScreenState extends State<MainScreen> {
+class MainScreenState extends State<MainScreen> with AutomaticKeepAliveClientMixin {
+
+  @override
+  bool get wantKeepAlive => true;
+
   TextEditingController searchController = new TextEditingController();
   int region = 999;
   int category = 999;
-  int requeststatus = 0;
+  int requeststatus = 1;
   int _count_ad = 0;
   int _index_page = 1;
   String _prev_url = '';
@@ -158,7 +162,7 @@ class MainScreenState extends State<MainScreen> {
                     return Center(child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Нет подключения к интернету'),
+                        Text('Интернетке байланыш жок...'),
                         ElevatedButton(onPressed: () {
                           check_internet();
                             setState(() {
@@ -167,7 +171,7 @@ class MainScreenState extends State<MainScreen> {
                               widget.list_category = getCategories();
                               widget.list_region = getRegions();
                             });
-                        }, child: Text('Повторить'))
+                        }, child: Text('Кайталоо'))
                       ],
                     ),);
                   }
@@ -205,7 +209,7 @@ class MainScreenState extends State<MainScreen> {
                                   controller: searchController,
                                   decoration: InputDecoration(
                                       border: OutlineInputBorder(),
-                                      labelText: 'Поиск...'),
+                                      labelText: 'Издөө...'),
                                 )),
                             IconButton(
                                 onPressed: () {
@@ -369,6 +373,7 @@ class MainScreenState extends State<MainScreen> {
                                     Divider(),
                                 scrollDirection: Axis.vertical,
                                 physics: NeverScrollableScrollPhysics(),
+                                addAutomaticKeepAlives: true,
                                 shrinkWrap: true,
                                 itemCount: snapshot.data.length,
                                 itemBuilder: (BuildContext context, int index) {
@@ -411,7 +416,7 @@ class MainScreenState extends State<MainScreen> {
                                           children: [
                                             SizedBox(width: 135,child:Text(snapshot.data[index].region),),
                                             Text(
-                                              'Договорная',
+                                              'Келишим баа',
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w600,
                                                   color: Colors.deepOrange),
@@ -692,6 +697,7 @@ class MainScreenState extends State<MainScreen> {
         _prev_url = jsonData['previous'];
         requeststatus = 0;
       });
+      print('function returns');
       return listAd;
     } else {
       print('Error Failed load');

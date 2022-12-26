@@ -159,7 +159,7 @@ class AdDetailState extends State<AdDetail> {
           data['region'],
           data['address'],
           data['price'],
-          data['valute'].toString(), []);
+          data['valute'].toString(),data['date'], []);
       for (Map<String, dynamic> s in data['images_set']) {
         _ad.images.add(s['image']);
       }

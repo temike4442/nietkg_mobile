@@ -1,16 +1,12 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-//import 'package:dio/dio.dart';
-import 'package:multi_image_picker/multi_image_picker.dart';
-//import 'includes/flutter_absolute_path.dart';
-import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:flutter_absolute_path/flutter_absolute_path.dart';
 import 'includes/loads.dart';
 
-List<Asset> images = <Asset>[];
+List<XFile> images = [];
 late String title;
 late String content;
 int category = 1;
@@ -36,6 +32,7 @@ class AddTabWidget extends StatefulWidget {
 }
 
 class AddTabWidgetState extends State<AddTabWidget> {
+  final ImagePicker _picker= ImagePicker();
   int _send_status = 0;
   final  snackBar = SnackBar(
     content: Text('Yay! A SnackBar!'),
@@ -45,12 +42,7 @@ class AddTabWidgetState extends State<AddTabWidget> {
     return GridView.count(
       crossAxisCount: 3,
       children: List.generate(images.length, (index) {
-        Asset asset = images[index];
-        return AssetThumb(
-          asset: asset,
-          width: 300,
-          height: 300,
-        );
+        return Image.file(File(images[index].path));
       }),
     );
   }
@@ -250,6 +242,7 @@ class AddTabWidgetState extends State<AddTabWidget> {
                             setState(() {
                               _send_status = 0;
                             });
+                            images.clear();
                             titleController.clear();
                               contentController.clear();
                               numberController.clear();
@@ -305,11 +298,10 @@ class AddTabWidgetState extends State<AddTabWidget> {
                           }).catchError((error, stackTrace) {
 
                             print("inner: $error");
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error),));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString()),));
                             setState(() {
                               _send_status = 0;
                             });
-                            // although `throw SecondError()` has the same effect.
                             return Future.error('Ошибка!!!');
                           });
                         }
@@ -324,42 +316,27 @@ class AddTabWidgetState extends State<AddTabWidget> {
     );
   }
 
-  Future<void> loadAssets() async {
-    List<Asset> resultList = <Asset>[];
-    String error = 'No Error Detected';
+  void loadAssets() async {
+    List<XFile> resultlist = await _picker.pickMultiImage(imageQuality: 75);
 
-    try {
-      resultList = await MultiImagePicker.pickImages(
-        maxImages: 10,
-        enableCamera: true,
-        selectedAssets: images,
-        cupertinoOptions: CupertinoOptions(takePhotoIcon: "chat"),
-        materialOptions: MaterialOptions(
-          actionBarColor: "#abcdef",
-          actionBarTitle: "Добавить фото",
-          allViewTitle: "Все фотографии",
-          useDetailsView: false,
-          selectCircleStrokeColor: "#000000",
-        ),
-      );
-    } on Exception catch (e) {
-      error = e.toString();
+    if(resultlist!.isNotEmpty){
+      images.addAll(resultlist);
     }
 
-    if (!mounted) return;
+    /*if (!mounted) return;*/
 
     setState(() {
-      images = resultList;
     });
   }
 }
 
 Future postData() async {
-  /*Dio dio = new Dio();
+  Dio dio = new Dio();
   List<MultipartFile> _images = [];
+
   if (images.length != 0) {
     for (int i = 0; i < images.length; i++) {
-      _images.add(await MultipartFile.fromFile(await FlutterAbsolutePath.getAbsolutePath(images[i].identifier!)));
+      _images.add(await MultipartFile.fromFile(images[i].path,contentType: MediaType('image','jpg')));
     }
   }
 
@@ -375,41 +352,14 @@ Future postData() async {
     "valute": valute,
     'images': _images
   });
+  try {
     var response = await dio.post('https://www.jaria.kg/apis/v1/create/',
         data: formData,
         options: Options(
             headers: {'Content-type': 'application/json; charset=UTF-8'}));
-    return response.data;*/
-
-  Uri uri = Uri.parse('https://www.jaria.kg/apis/v1/create/');
-  http.MultipartRequest request = new http.MultipartRequest('POST', uri);
-  request.fields['title'] = titleController.text;
-  request.fields['content'] = contentController.text;
-  request.fields['number'] = numberController.text;
-  request.fields['name'] = nameController.text;
-  request.fields['address'] = addressController.text;
-  request.fields['price'] = priceController.text;
-  request.fields['category'] = category.toString();
-  request.fields['region'] = region.toString();
-  request.fields['valute'] = valute.toString();
-
-  List<http.MultipartFile> multipart = [];
-  for (int i = 0; i < images.length; i++) {
-    var path = await FlutterAbsolutePath.getAbsolutePath(images[i].identifier);
-    //var bytes = (await rootBundle.load(path)).buffer.asUint8List();
-    var mpFile = http.MultipartFile.fromBytes('img', File(path).readAsBytesSync(), filename: 'photo');
-    request.files.add(mpFile);
-    print(mpFile);
+    return response.data;
+  } catch(e){
+    print(e);
   }
-  /*for (int i=0; i<_images.length;i++){
 
-    request.files.add(new http.MultipartFile.fromString('field', value));
-    request.files.add(new http.MultipartFile.fromBytes('file', await File.fromUri().readAsBytes(), contentType: new MediaType('image', 'jpeg')));
-    /*request.files.add(await http.MultipartFile.fromPath(
-        'image_file2', second.path,
-        contentType: new MediaType('application', 'x-tar')));*/
-  }*/
-  http.StreamedResponse response = await request.send();
-  print(response.statusCode);
-  return 'error';
 }
